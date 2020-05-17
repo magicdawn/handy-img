@@ -8,3 +8,6 @@ node_modules
 .nyc_output
 coverage
 coverage.*
+
+test/fixtures/*.png
+!test/fixtures/demo.png
