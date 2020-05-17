@@ -1,9 +1,6 @@
-<!-- AUTO_GENERATED_UNTOUCHED_FLAG -->
-
-
 {% extends "layout.md" %}
 
 {% block extra %}
+{% include 'cli.md' %}
 {% include 'api.md' %}
 {% endblock %}
-
