@@ -3,6 +3,7 @@ const {metadata, decode} = require('../../')
 
 module.exports = {
   command: 'info <file>',
+  aliases: ['i'],
   desc: 'show info for file',
   builder(yargs) {
     return yargs

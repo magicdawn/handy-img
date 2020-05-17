@@ -4,6 +4,7 @@ const {mozjpegCompress} = require('../../')
 
 module.exports = {
   command: 'compress <file> [options]',
+  aliases: ['c'],
   desc: 'show info for file',
   builder(yargs) {
     return yargs
