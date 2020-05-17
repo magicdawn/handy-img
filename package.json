@@ -49,5 +49,9 @@
       "prettier --write",
       "git add"
     ]
+  },
+  "dependencies": {
+    "@saschazar/wasm-mozjpeg": "^1.2.1",
+    "sharp": "^0.25.2"
   }
 }
