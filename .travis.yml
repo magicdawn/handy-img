@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - lts/*
   - node
-script: 'npm run test-cover'
+script: 'npm run test-cover-ci'
 after_script: 'npm run report-cover'
 notifications:
   email: false
