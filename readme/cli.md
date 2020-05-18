@@ -3,11 +3,12 @@
 just type `himg` or `handy-img`
 
 ```txt
+$ himg
 himg <命令>
 
 命令：
-  himg compress <file> [options]  show info for file                [aliases: c]
-  himg info <file>                show info for file                [aliases: i]
+  himg compress <file>  compress file                               [aliases: c]
+  himg info <file>      show info for file                          [aliases: i]
 
 选项：
   --version  显示版本号                                                   [布尔]
