@@ -3,9 +3,9 @@ const fse = require('fs-extra')
 const {mozjpegCompress} = require('../../')
 
 module.exports = {
-  command: 'compress <file> [options]',
+  command: 'compress <file>',
   aliases: ['c'],
-  desc: 'show info for file',
+  desc: 'compress file',
   builder(yargs) {
     return yargs
       .positional('file', {
@@ -16,7 +16,7 @@ module.exports = {
         output: {
           type: 'string',
           desc: 'output file',
-          alias: ['o'],
+          alias: 'o',
         },
       })
   },
