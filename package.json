@@ -57,6 +57,7 @@
   "dependencies": {
     "@saschazar/wasm-mozjpeg": "^1.2.1",
     "fs-extra": "^9.0.0",
-    "sharp": "^0.25.2"
+    "sharp": "^0.25.2",
+    "yargs": "^16.1.0"
   }
 }
