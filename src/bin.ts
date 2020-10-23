@@ -1,8 +1,12 @@
-#!/usr/bin/env node
-
 import yargs from 'yargs'
 
+// cmds
+import cmdInfo from './commands/info'
+import cmdCompress from './commands/compress'
+
 yargs
-  .commandDir(__dirname + '/commands')
+  //
+  .command(cmdInfo)
+  .command(cmdCompress)
   .demandCommand()
   .help().argv
