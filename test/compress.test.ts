@@ -1,5 +1,5 @@
-import {mozjpegCompress} from '../lib/compress'
-import {metadata} from '../lib/codec/decode'
+import {mozjpegCompress} from '../src/compress'
+import {metadata} from '../src/codec/decode'
 
 describe('compress', () => {
   const input = __dirname + '/fixtures/demo.png'

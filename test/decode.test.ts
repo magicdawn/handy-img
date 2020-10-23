@@ -1,4 +1,4 @@
-import {metadata, decode} from '../lib/codec/decode'
+import {metadata, decode} from '../src/codec/decode'
 
 describe('decode', () => {
   const input = __dirname + '/fixtures/demo.png'
