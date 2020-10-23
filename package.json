@@ -3,13 +3,23 @@
   "version": "0.0.2",
   "description": "handy img tool and API",
   "main": "lib/index.js",
+  "types": "types/index.d.ts",
   "bin": {
     "handy-img": "./bin/handy-img",
     "himg": "./bin/handy-img"
   },
+  "files": [
+    "bin",
+    "lib",
+    "types",
+    "package.json",
+    "README.md",
+    "CHANGELOG.md",
+    "LICENSE"
+  ],
   "scripts": {
     "tsc": "tsc --incremental",
-    "build": "rm -rf lib; yarn tsc",
+    "build": "rm -rf lib; tsc",
     "prepublishOnly": "yarn run build",
     "test": "mocha",
     "test-cover": "nyc --reporter=lcov --reporter=text mocha",
@@ -35,6 +45,13 @@
     "url": "https://github.com/magicdawn/handy-img/issues"
   },
   "homepage": "https://github.com/magicdawn/handy-img#readme",
+  "dependencies": {
+    "@types/sharp": "^0.26.0",
+    "fs-extra": "^9.0.0",
+    "node-mozjpeg": "^0.3.2",
+    "sharp": "^0.26.2",
+    "yargs": "^16.1.0"
+  },
   "devDependencies": {
     "@magicdawn/eslint-config": "latest",
     "@magicdawn/prettier-config": "latest",
@@ -43,7 +60,6 @@
     "@types/mocha": "^8.0.3",
     "@types/node": "^14.14.2",
     "@types/prettier": "^2.1.5",
-    "@types/sharp": "^0.26.0",
     "@types/yargs": "^15.0.9",
     "codecov": "^3.8.0",
     "eslint": "^7.11.0",
@@ -65,11 +81,5 @@
     "*.{js,less,vue}": [
       "prettier --write"
     ]
-  },
-  "dependencies": {
-    "fs-extra": "^9.0.0",
-    "node-mozjpeg": "^0.3.2",
-    "sharp": "^0.26.2",
-    "yargs": "^16.1.0"
   }
 }
