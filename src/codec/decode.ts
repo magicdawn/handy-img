@@ -1,4 +1,4 @@
-const sharp = require('sharp')
+import sharp from 'sharp'
 
 /**
  * get image info
@@ -19,7 +19,9 @@ const sharp = require('sharp')
  * }
  */
 
-exports.metadata = async function (input) {
+export type SharpInput = string | Buffer
+
+export async function metadata(input: SharpInput) {
   const meta = await sharp(input).metadata()
   return meta
 }
@@ -28,11 +30,11 @@ exports.metadata = async function (input) {
  * decode img to raw RGB|RGBA pixel data
  */
 
-exports.decode = async function (input) {
-  const {data, info} = await sharp(input).ensureAlpha().raw().toBuffer({resolveWithObject: true})
+export async function decode(input: SharpInput) {
+  const {data, info} = await sharp(input).raw().toBuffer({resolveWithObject: true})
 
   // data is Buffer, data.buffer is ArrayBuffer
-  const uarr = new Uint8Array(data.buffer)
+  // const uarr = new Uint8Array(data.buffer)
 
   // example info
   // info: {
@@ -43,8 +45,6 @@ exports.decode = async function (input) {
   //   premultiplied: false,
   //   size: 3001500
   // }
-  const {width, height} = info
-
-  // ImageData like struct
-  return {data: uarr, width, height}
+  const {width, height, channels} = info
+  return {data, width, height, channels}
 }

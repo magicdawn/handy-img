@@ -11,3 +11,6 @@ coverage.*
 
 test/fixtures/*.png
 !test/fixtures/demo.png
+
+/lib
+/tsconfig.tsbuildinfo

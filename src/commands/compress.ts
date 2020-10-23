@@ -1,11 +1,12 @@
-const path = require('path')
-const fse = require('fs-extra')
-const {mozjpegCompress} = require('../../')
+import path from 'path'
+import fse from 'fs-extra'
+import {CommandModule} from 'yargs'
+import {mozjpegCompress} from '../'
 
-module.exports = {
+const cmd: CommandModule = {
   command: 'compress <file>',
   aliases: ['c'],
-  desc: 'compress file',
+  describe: 'compress file',
   builder(yargs) {
     return yargs
       .positional('file', {
@@ -25,8 +26,10 @@ module.exports = {
   },
 }
 
+export default cmd
+
 async function main(argv) {
-  let {file} = argv
+  let {file} = argv as {file: string}
   file = path.resolve(file)
 
   let output = argv.output

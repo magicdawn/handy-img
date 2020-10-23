@@ -1,0 +1,11 @@
+#!/usr/bin/env node
+
+const dev = process.argv.some((arg) => ['-d', '--dev'].includes(arg))
+
+if (dev) {
+  console.warn('[ts-node] this is slow !!!')
+  require('ts-node').register({scriptMode: true, transpileOnly: true})
+  require('../lib/bin.ts')
+} else {
+  require('../lib/bin.js')
+}

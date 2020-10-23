@@ -1,7 +1,7 @@
-const {decode} = require('./codec/decode')
-const {encode: mozjpegEncode} = require('./codec/mozjpeg')
+import {decode, SharpInput} from './codec/decode'
+import {encode as mozjpegEncode, EncodeOptions as MozjpegEncodeOptions} from 'node-mozjpeg'
 
-exports.mozjpegCompress = async function mozjpegCompress(file, options) {
+export async function mozjpegCompress(file: SharpInput, options?: MozjpegEncodeOptions) {
   if (!file) {
     throw new Error('file is required')
   }
