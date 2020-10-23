@@ -13,4 +13,5 @@ test/fixtures/*.png
 !test/fixtures/demo.png
 
 /lib
+/types
 /tsconfig.tsbuildinfo

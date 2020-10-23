@@ -19,7 +19,7 @@
   ],
   "scripts": {
     "tsc": "tsc --incremental",
-    "build": "rm -rf lib; tsc",
+    "build": "rm -rf lib; rm -rf types; tsc",
     "prepublishOnly": "yarn run build",
     "test": "mocha",
     "test-cover": "nyc --reporter=lcov --reporter=text mocha",
