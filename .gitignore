@@ -15,3 +15,4 @@ test/fixtures/*.png
 /lib
 /types
 /tsconfig.tsbuildinfo
+**/*_compressed.jpeg

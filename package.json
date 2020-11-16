@@ -18,8 +18,8 @@
     "LICENSE"
   ],
   "scripts": {
-    "tsc": "tsc --incremental",
-    "build": "rm -rf lib; rm -rf types; tsc",
+    "dev": "tsc -w --incremental",
+    "build": "rm -rf lib; rm tsconfig.tsbuildinfo; rm -rf types; tsc",
     "prepublishOnly": "yarn run build",
     "test": "mocha",
     "test-cover": "nyc --reporter=lcov --reporter=text mocha",
@@ -48,7 +48,7 @@
   "dependencies": {
     "@types/sharp": "^0.26.0",
     "fs-extra": "^9.0.0",
-    "node-mozjpeg": "^0.3.2",
+    "node-mozjpeg": "^0.4.0",
     "sharp": "^0.26.2",
     "yargs": "^16.1.0"
   },

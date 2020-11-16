@@ -31,7 +31,7 @@ export async function metadata(input: SharpInput) {
  */
 
 export async function decode(input: SharpInput) {
-  const {data, info} = await sharp(input).raw().toBuffer({resolveWithObject: true})
+  const {data, info} = await sharp(input).ensureAlpha().raw().toBuffer({resolveWithObject: true})
 
   // data is Buffer, data.buffer is ArrayBuffer
   // const uarr = new Uint8Array(data.buffer)
