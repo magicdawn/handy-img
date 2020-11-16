@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.2.0 2020-11-16
+
+- node-mozjpeg@0.4.0, sharp ensureAlpha
+
 ## v0.1.0 2020-10-24
 
 - TypeScript
