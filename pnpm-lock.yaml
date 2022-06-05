@@ -3,7 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@magicdawn/eslint-config': latest
   '@magicdawn/prettier-config': latest
-  '@magicdawn/x-args': ^0.0.1
+  '@magicdawn/x-args': ^0.0.3
   '@swc/core': ^1.2.196
   '@swc/helpers': ^0.3.17
   '@types/bytes': ^3.1.1
@@ -37,7 +37,7 @@ specifiers:
   yargs: ^16.1.0
 
 dependencies:
-  '@magicdawn/x-args': 0.0.1
+  '@magicdawn/x-args': 0.0.3
   '@types/sharp': 0.30.2
   bytes: 3.1.2
   chalk: 4.1.2
@@ -387,8 +387,8 @@ packages:
     resolution: {integrity: sha512-ZyJ9S6lV6i6AgfF2QCm9EoKZZm6RKYDcxL89Sps3KQfM7PdTc5iNX3fXBKBY5fQX3N0a2a0s8XGKovepn8qb9g==}
     dev: true
 
-  /@magicdawn/x-args/0.0.1:
-    resolution: {integrity: sha512-C9U7nYhaRE4D0t35VzCSS3ywmxdrfX2zdaJ8DRbc5ZGdqzkoOEoMQCwq0fG43HiMArHx49jMw9zNoW1B7LCEhA==}
+  /@magicdawn/x-args/0.0.3:
+    resolution: {integrity: sha512-gFbAiWhN6RAU+rHkbA5H1QwGl8IY0+5ZG/hRpSeL3fCi6x2E/TXj3E6FaN0U2TwcJHy1m3HILPmMNz/7IeU2rw==}
     hasBin: true
     dependencies:
       chalk: 4.1.2
