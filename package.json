@@ -3,7 +3,7 @@
   "version": "0.2.0",
   "description": "handy img tool and API",
   "main": "lib/index.js",
-  "types": "types/index.d.ts",
+  "types": "lib/index.d.ts",
   "bin": {
     "handy-img": "./bin/handy-img.js",
     "himg": "./bin/handy-img.js"
@@ -11,22 +11,17 @@
   "files": [
     "bin/*.js",
     "lib",
-    "types",
-    "package.json",
-    "README.md",
-    "CHANGELOG.md",
-    "LICENSE"
+    "CHANGELOG.md"
   ],
   "scripts": {
-    "dev": "tsc -w --incremental",
-    "build": "rm -rf lib; rm tsconfig.tsbuildinfo; rm -rf types; tsc",
-    "prepublishOnly": "yarn run build",
+    "prepare": "husky install",
+    "build": "rm -rf lib; tsc",
+    "prepublishOnly": "pnpm build",
     "test": "mocha",
     "test-cover": "nyc --reporter=lcov --reporter=text mocha",
     "test-cover-ci": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
     "report-cover": "codecov",
-    "gen-readme": "swig render ./readme/readme.md > README.md && prettier --write README.md",
-    "prepare": "husky install"
+    "gen-readme": "swig render ./readme/readme.md > README.md && prettier --write README.md"
   },
   "repository": {
     "type": "git",
