@@ -3,6 +3,7 @@ lockfileVersion: 5.4
 specifiers:
   '@magicdawn/eslint-config': latest
   '@magicdawn/prettier-config': latest
+  '@magicdawn/x-args': ^0.0.1
   '@swc/core': ^1.2.196
   '@swc/helpers': ^0.3.17
   '@types/bytes': ^3.1.1
@@ -20,7 +21,7 @@ specifiers:
   eslint: 8.17.0
   fs-extra: 10.1.0
   globby: '11'
-  husky: latest
+  husky: ^8.0.0
   lint-staged: latest
   mocha: 10.0.0
   node-mozjpeg: ^0.4.0
@@ -36,6 +37,7 @@ specifiers:
   yargs: ^16.1.0
 
 dependencies:
+  '@magicdawn/x-args': 0.0.1
   '@types/sharp': 0.30.2
   bytes: 3.1.2
   chalk: 4.1.2
@@ -384,6 +386,15 @@ packages:
   /@magicdawn/prettier-config/0.0.2:
     resolution: {integrity: sha512-ZyJ9S6lV6i6AgfF2QCm9EoKZZm6RKYDcxL89Sps3KQfM7PdTc5iNX3fXBKBY5fQX3N0a2a0s8XGKovepn8qb9g==}
     dev: true
+
+  /@magicdawn/x-args/0.0.1:
+    resolution: {integrity: sha512-C9U7nYhaRE4D0t35VzCSS3ywmxdrfX2zdaJ8DRbc5ZGdqzkoOEoMQCwq0fG43HiMArHx49jMw9zNoW1B7LCEhA==}
+    hasBin: true
+    dependencies:
+      chalk: 4.1.2
+      clipanion: 3.2.0-rc.11
+      globby: 11.1.0
+    dev: false
 
   /@nodelib/fs.scandir/2.1.5:
     resolution: {integrity: sha512-vq24Bq3ym5HEQm2NKCr3yXDwjc7vTsEThRDnkp2DK9p1uqLR+DHurm/NOTo0KG7HYHU7eppKZj3MyqYuMBf62g==}
