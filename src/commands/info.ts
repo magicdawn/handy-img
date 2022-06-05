@@ -1,26 +1,23 @@
+import { Command, Option, Usage } from 'clipanion'
 import path from 'path'
-import type {CommandModule} from 'yargs'
-import {metadata, decode} from '../'
+import { decode, metadata } from '../'
 
-const cmd: CommandModule = {
-  command: 'info <file>',
-  aliases: ['i'],
-  describe: 'show info for file',
-  builder(yargs) {
-    return yargs.positional('file', {
-      desc: 'the file to view',
-      required: true,
-      type: 'string',
-    })
-  },
-  handler(argv) {
-    return main(argv)
-  },
+export class InfoCommand extends Command {
+  static paths = [['info'], ['i']]
+
+  static usage: Usage = {
+    description: 'show info for file',
+  }
+
+  file = Option.String({ required: true })
+
+  execute(): Promise<number | void> {
+    return main(this)
+  }
 }
-export default cmd
 
-async function main(argv) {
-  let {file} = argv
+async function main(argv: { file: string }) {
+  let { file } = argv
   if (file) file = path.resolve(file)
 
   const meta = await metadata(file)
