@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.0 2022-06-06
+
+- use clipanion
+- use magicdawn/x-args for glob input & output pattern
+
 ## v0.2.0 2020-11-16
 
 - node-mozjpeg@0.4.0, sharp ensureAlpha
