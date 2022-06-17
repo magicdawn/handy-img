@@ -16,3 +16,23 @@ himg <命令>
 
 缺少 non-option 参数：传入了 0 个, 至少需要 1 个
 ```
+
+## `compress`
+
+### Examples
+
+```sh
+# compress all jpeg file to a directory `compressed` and keep the original name
+# use mozjpeg, quality = 80
+himg c -f './*.jpg' -o 'compressed/:name.:ext' --codec mozjpeg -q 80
+
+# or without `--codec mozjpeg`, this will use sharp to compress img to webp
+himg c -f './*.jpg' -o 'compressed/:name.:ext' -q 80
+```
+
+### flags
+
+- `-f/--files` input glob
+- `-o/--output` output filename template
+- `-t` show available tokens that can be used in `-o`
+- `-q/--quality` quality, default to `80`, will pass to `node-mozjpeg.encode({quality})` or `sharp.webp({quality})`
