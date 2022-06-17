@@ -2,7 +2,7 @@ import { decode, SharpInput } from './codec/decode'
 import { encode as mozjpegEncode, EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
 import sharp, { SharpOptions } from 'sharp'
 
-export async function mozjpegCompress(file: SharpInput, options?: MozjpegEncodeOptions) {
+export async function mozjpegCompress(file: SharpInput, options?: Partial<MozjpegEncodeOptions>) {
   if (!file) {
     throw new Error('file is required')
   }

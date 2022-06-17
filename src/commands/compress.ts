@@ -152,7 +152,10 @@ async function compress(
   const outputPath = path.resolve(output)
 
   if (codec === 'mozjpeg') {
-    const buf = await mozjpegCompress(input)
+    const buf = await mozjpegCompress(input, {
+      progressive: true,
+      quality,
+    })
     await fse.outputFile(outputPath, buf)
   } else {
     const buf = await sharpWebp(input, keepMetadata, {

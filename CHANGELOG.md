@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.1 2022-06-17
+
+- upgrade node-mozjpeg@v1.0.1
+- support ser `--quality` with `--codec mozjpeg`
+
 ## v0.3.0 2022-06-06
 
 - use clipanion
