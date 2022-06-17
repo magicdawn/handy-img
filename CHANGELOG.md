@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.2 2022-06-17
+
+- add `-q` alias to `--quality`
+- print mapped files count & list in compress command
+
 ## v0.3.1 2022-06-17
 
 - upgrade node-mozjpeg@v1.0.1

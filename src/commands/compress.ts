@@ -64,7 +64,7 @@ export class CompressCommand extends Command {
     description: 'keep metadata(only available with --codec webp)',
   })
 
-  quality = Option.String('--quality', '80', {
+  quality = Option.String('-q,--quality', '80', {
     description: 'quality',
   })
 
@@ -78,6 +78,20 @@ export class CompressCommand extends Command {
     // console.log(this)
 
     const resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+    console.log('')
+    console.log(
+      `${chalk.green('[globby]')}: docs ${chalk.blue(
+        'https://github.com/mrmlnc/fast-glob#pattern-syntax'
+      )}`
+    )
+    console.log(
+      `${chalk.green('[globby]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
+        resolvedFiles.length
+      )} files ->`
+    )
+    resolvedFiles.forEach((f) => {
+      console.log(`  ${chalk.cyan(f)}`)
+    })
 
     const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
 
