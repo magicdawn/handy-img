@@ -89,6 +89,20 @@ export class CompressCommand extends Command {
       return
     }
 
+    const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
+
+    const previewingTip = () => {
+      console.log('')
+      console.log('-'.repeat(80))
+      console.log(
+        `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
+          '-y or --yes'
+        )} flag to execute`
+      )
+      console.log('-'.repeat(80))
+      console.log('')
+    }
+
     // reading this, so use arrow function
     const processFiles = async (files: string) => {
       const resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
@@ -106,8 +120,6 @@ export class CompressCommand extends Command {
       resolvedFiles.forEach((f) => {
         console.log(`  ${chalk.cyan(f)}`)
       })
-
-      const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
 
       let outputs: string[] = []
       for (let item of resolvedFiles) {
@@ -138,15 +150,7 @@ export class CompressCommand extends Command {
       }
 
       if (!this.yes) {
-        console.log('')
-        console.log('-'.repeat(80))
-        console.log(
-          `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
-            '-y or --yes'
-          )} flag to execute`
-        )
-        console.log('-'.repeat(80))
-        console.log('')
+        previewingTip()
         return
       }
 
@@ -187,8 +191,6 @@ export class CompressCommand extends Command {
         console.log(`  ${chalk.cyan(f)}`)
       })
 
-      const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
-
       // append _compressed
       const outputDirResolved = dirResolved + this.dirSuffix
       const outputDirTitle = dirtitle + this.dirSuffix
@@ -212,15 +214,7 @@ export class CompressCommand extends Command {
       }
 
       if (!this.yes) {
-        console.log('')
-        console.log('-'.repeat(80))
-        console.log(
-          `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
-            '-y or --yes'
-          )} flag to execute`
-        )
-        console.log('-'.repeat(80))
-        console.log('')
+        previewingTip()
         return
       }
 
