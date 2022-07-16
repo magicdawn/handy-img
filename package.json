@@ -58,26 +58,26 @@
   "devDependencies": {
     "@magicdawn/eslint-config": "latest",
     "@magicdawn/prettier-config": "latest",
-    "@swc/core": "^1.2.196",
+    "@swc/core": "^1.2.215",
     "@swc/helpers": "^0.3.17",
     "@types/bytes": "^3.1.1",
     "@types/eslint": "^7.2.4",
     "@types/fs-extra": "^9.0.2",
     "@types/mocha": "^8.0.3",
-    "@types/node": "^14.14.2",
+    "@types/node": "^14.18.22",
     "@types/prettier": "^2.1.5",
     "@types/yargs": "^15.0.9",
     "codecov": "^3.8.0",
     "eslint": "8.17.0",
     "husky": "^8.0.0",
-    "lint-staged": "latest",
+    "lint-staged": "^13.0.3",
     "mocha": "10.0.0",
     "nyc": "^15.1.0",
     "prettier": "latest",
     "should": "^13.2.3",
     "ts-node": "10.8.1",
-    "type-fest": "^2.13.0",
-    "typescript": "^4.7.3"
+    "type-fest": "^2.16.0",
+    "typescript": "^4.7.4"
   },
   "lint-staged": {
     "*.{ts,tsx,json,yml,md}": [

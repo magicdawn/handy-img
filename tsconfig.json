@@ -9,7 +9,8 @@
     "resolveJsonModule": true,
     "target": "es2019",
     "module": "CommonJS",
-    "declaration": true
+    "declaration": true,
+    "strictNullChecks": true
   },
   "ts-node": {
     "transpileOnly": true,

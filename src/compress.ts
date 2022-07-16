@@ -1,6 +1,6 @@
-import { decode, SharpInput } from './codec/decode'
 import { encode as mozjpegEncode, EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
-import sharp, { SharpOptions } from 'sharp'
+import sharp from 'sharp'
+import { decode, SharpInput } from './codec/decode'
 
 export async function mozjpegCompress(file: SharpInput, options?: Partial<MozjpegEncodeOptions>) {
   if (!file) {
