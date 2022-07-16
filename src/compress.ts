@@ -21,12 +21,12 @@ export async function sharpWebp(
   keepMetadata = true,
   options?: sharp.WebpOptions
 ) {
-  let op = sharp(file).webp(options)
+  let img = sharp(file).webp(options)
 
   if (keepMetadata) {
-    op = op.withMetadata()
+    img = img.withMetadata()
   }
 
-  const { data, info } = await op.toBuffer({ resolveWithObject: true })
+  const { data } = await img.toBuffer({ resolveWithObject: true })
   return data
 }

@@ -1,23 +1,13 @@
-import { BaseCommand, getFilenameTokens, renderFilenameTokens } from '@magicdawn/x-args'
+import { getFilenameTokens, printFilenameTokens, renderFilenameTokens } from '@magicdawn/x-args'
+import bytes from 'bytes'
+import chalk from 'chalk'
 import { Command, Option, Usage } from 'clipanion'
 import fse from 'fs-extra'
-import path from 'path'
-import { mozjpegCompress } from '../'
 import globby from 'globby'
-import * as t from 'typanion'
-import chalk from 'chalk'
-import { printFilenameTokens } from '@magicdawn/x-args'
-import { sharpWebp } from '../compress'
-import bytes from 'bytes'
+import path from 'path'
 import pmap from 'promise.map'
-
-//
-// --codec
-// mozjpeg
-// webp
-//
-// -d dir
-// -o output
+import { mozjpegCompress } from '../compress'
+import { sharpWebp } from '../compress'
 
 type Codec = 'mozjpeg' | 'webp'
 
@@ -29,10 +19,9 @@ export class CompressCommand extends Command {
   }
 
   /**
-   * glob
+   * input glob
    */
   files = Option.String('-f,--files', {
-    required: true,
     description: 'files as input',
   })
   ignoreCase = Option.Boolean('--ignore-case', true, {
@@ -42,12 +31,10 @@ export class CompressCommand extends Command {
     description: 'cwd used in glob',
   })
 
-  // for safty
-  yes = Option.Boolean('-y,--yes', false, {
-    description: 'exec commands, default false(only preview commands, aka dry run)',
-  })
-
-  // for tokens
+  /**
+   * output options
+   */
+  // inspect tokens, for write output pattern
   showTokens = Option.Boolean('-t,--tokens,--show-tokens', false, {
     description: 'show available tokens',
   })
@@ -56,16 +43,36 @@ export class CompressCommand extends Command {
     description: 'output patterns',
   })
 
-  codec = Option.String('--codec', 'webp', {
-    description: 'use mozjpeg or webp',
+  codec = Option.String('--codec', 'mozjpeg', {
+    description: 'Allowed codec: `mozjpeg` or `webp`',
   })
 
   metadata = Option.Boolean('--metadata', true, {
     description: 'keep metadata(only available with --codec webp)',
   })
 
-  quality = Option.String('-q,--quality', '80', {
+  quality = Option.String('-q,--quality', '82', {
     description: 'quality',
+  })
+
+  /**
+   * dir mode
+   */
+
+  dir = Option.String('-d,--dir', {
+    description: 'compress whole dir, and output to dir_compressed',
+  })
+
+  dirSuffix = Option.String('--dir-suffix', '_compressed', {
+    description: 'suffix to append to original dir name when using -d,--dir mode',
+  })
+
+  /**
+   * safty
+   */
+
+  yes = Option.Boolean('-y,--yes', false, {
+    description: 'exec commands, default false(only preview commands, aka dry run)',
   })
 
   async execute(): Promise<number | void> {
@@ -73,86 +80,181 @@ export class CompressCommand extends Command {
   }
 
   async run() {
-    const { files, showTokens, ignoreCase, globCwd = process.cwd(), yes } = this
+    const { files, showTokens, ignoreCase, globCwd = process.cwd(), yes, dir } = this
     const { output, codec, metadata, quality } = this
     // console.log(this)
 
-    const resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
-    console.log('')
-    console.log(
-      `${chalk.green('[globby]')}: docs ${chalk.blue(
-        'https://github.com/mrmlnc/fast-glob#pattern-syntax'
-      )}`
-    )
-    console.log(
-      `${chalk.green('[globby]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
-        resolvedFiles.length
-      )} files ->`
-    )
-    resolvedFiles.forEach((f) => {
-      console.log(`  ${chalk.cyan(f)}`)
-    })
-
-    const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
-
-    let outputs: string[] = []
-    for (let item of resolvedFiles) {
-      const tokens = getFilenameTokens(item)
-      tokens.ext = targetExt
-
-      // help decide -o
-      if (showTokens) {
-        console.log('') // split
-        console.log('%s for %s', chalk.green('[tokens]'), chalk.yellow(item))
-        printFilenameTokens(tokens)
-      }
-
-      // help confirm output
-      let curOutput = ''
-      if (output) {
-        curOutput = renderFilenameTokens(output, tokens)
-        outputs.push(curOutput)
-        if (!yes) {
-          console.log(
-            '%s: %s -> %s',
-            chalk.green('[compress]'),
-            chalk.green(item),
-            chalk.yellow(curOutput)
-          )
-        }
-      }
-    }
-
-    if (!this.yes) {
-      console.log('')
-      console.log('-'.repeat(80))
-      console.log(
-        `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
-          '-y or --yes'
-        )} flag to execute`
-      )
-      console.log('-'.repeat(80))
-      console.log('')
+    if (!this.files && !this.dir) {
+      console.error('use -f,--files or -d,--dir to specify input imgs')
       return
     }
 
-    // start work
-    await pmap(
-      resolvedFiles,
-      async (item, index) => {
-        const curOutput = outputs[index]
+    // reading this, so use arrow function
+    const processFiles = async (files: string) => {
+      const resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+      console.log('')
+      console.log(
+        `${chalk.green('[globby]')}: docs ${chalk.blue(
+          'https://github.com/mrmlnc/fast-glob#pattern-syntax'
+        )}`
+      )
+      console.log(
+        `${chalk.green('[globby]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
+          resolvedFiles.length
+        )} files ->`
+      )
+      resolvedFiles.forEach((f) => {
+        console.log(`  ${chalk.cyan(f)}`)
+      })
 
+      const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
+
+      let outputs: string[] = []
+      for (let item of resolvedFiles) {
+        const tokens = getFilenameTokens(item)
+        tokens.ext = targetExt
+
+        // help decide -o
+        if (showTokens) {
+          console.log('') // split
+          console.log('%s for %s', chalk.green('[tokens]'), chalk.yellow(item))
+          printFilenameTokens(tokens)
+        }
+
+        // help confirm output
+        let curOutput = ''
+        if (output) {
+          curOutput = renderFilenameTokens(output, tokens)
+          outputs.push(curOutput)
+          if (!yes) {
+            console.log(
+              '%s: %s -> %s',
+              chalk.green('[compress:preview]'),
+              chalk.green(item),
+              chalk.yellow(curOutput)
+            )
+          }
+        }
+      }
+
+      if (!this.yes) {
+        console.log('')
+        console.log('-'.repeat(80))
         console.log(
-          '%s: %s -> %s',
-          chalk.green('[compress]'),
-          chalk.green(item),
-          chalk.yellow(curOutput)
+          `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
+            '-y or --yes'
+          )} flag to execute`
         )
+        console.log('-'.repeat(80))
+        console.log('')
+        return
+      }
 
-        return compress(item, curOutput, codec as Codec, metadata, Number(quality))
-      },
-      5
-    )
+      // start work
+      await pmap(
+        resolvedFiles,
+        async (item, index) => {
+          const curOutput = outputs[index]
+
+          console.log(
+            '%s: %s -> %s',
+            chalk.green('[compress:start]'),
+            chalk.green(item),
+            chalk.yellow(curOutput)
+          )
+
+          return compress(item, curOutput, codec as Codec, metadata, Number(quality))
+        },
+        5
+      )
+    }
+
+    const processDir = async (dir: string) => {
+      const dirResolved = path.resolve(dir)
+      const dirtitle = path.basename(dirResolved)
+
+      const pattern = './**/*.{jpg,jpeg,png,webp,bmp}'
+      const resolvedFiles = globby.sync(pattern, {
+        caseSensitiveMatch: !ignoreCase,
+        cwd: dirResolved,
+      })
+      console.log(
+        `${chalk.green('[globby]')}: mapping ${chalk.yellow(pattern)} in ${chalk.yellow(
+          dirResolved
+        )} to ${chalk.yellow(resolvedFiles.length)} files ->`
+      )
+      resolvedFiles.forEach((f) => {
+        console.log(`  ${chalk.cyan(f)}`)
+      })
+
+      const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
+
+      // append _compressed
+      const outputDirResolved = dirResolved + this.dirSuffix
+      const outputDirTitle = dirtitle + this.dirSuffix
+
+      const outputs: string[] = []
+      const outputsRelative: string[] = []
+
+      for (let item of resolvedFiles) {
+        const outputRelativeFilename = `${path.basename(item, path.extname(item))}.${targetExt}`
+        outputs.push(`${outputDirResolved}/${outputRelativeFilename}`)
+        outputsRelative.push(outputRelativeFilename)
+
+        if (!yes) {
+          console.log(
+            '%s: %s -> %s',
+            chalk.green('[compress:preview]'),
+            chalk.green(dirtitle + '/' + item),
+            chalk.yellow(outputDirTitle + '/' + outputRelativeFilename)
+          )
+        }
+      }
+
+      if (!this.yes) {
+        console.log('')
+        console.log('-'.repeat(80))
+        console.log(
+          `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
+            '-y or --yes'
+          )} flag to execute`
+        )
+        console.log('-'.repeat(80))
+        console.log('')
+        return
+      }
+
+      // start work
+      await pmap(
+        resolvedFiles,
+        async (item, index) => {
+          const curOutput = outputs[index]
+
+          console.log(
+            '%s: %s -> %s',
+            chalk.green('[compress:start]'),
+            chalk.green(dirtitle + '/' + item),
+            chalk.yellow(outputDirTitle + '/' + outputsRelative[index])
+          )
+
+          return compress(
+            path.join(dirResolved, item),
+            curOutput,
+            codec as Codec,
+            metadata,
+            Number(quality)
+          )
+        },
+        5
+      )
+    }
+
+    const inputMode = this.files ? 'files' : 'dir'
+    if (inputMode === 'files') {
+      await processFiles(files!)
+    } else if (inputMode === 'dir') {
+      await processDir(dir!)
+    }
   }
 }
 
@@ -182,5 +284,11 @@ async function compress(
     [input, outputPath].map((f) => fse.stat(f).then((stat) => stat.size))
   )
 
-  console.log('[success] write to %s, %s -> %s', output, bytes(originalSize), bytes(newSize))
+  console.log(
+    '%s write to %s, %s -> %s',
+    chalk.green('[compress:success]'),
+    output,
+    bytes(originalSize),
+    bytes(newSize)
+  )
 }
