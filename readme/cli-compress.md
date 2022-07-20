@@ -1,56 +1,3 @@
-<!-- AUTO_GENERATED_UNTOUCHED_FLAG -->
-
-# handy-img
-
-> handy img tool and API
-
-[![Build Status](https://img.shields.io/travis/magicdawn/handy-img.svg?style=flat-square)](https://travis-ci.org/magicdawn/handy-img)
-[![Coverage Status](https://img.shields.io/codecov/c/github/magicdawn/handy-img.svg?style=flat-square)](https://codecov.io/gh/magicdawn/handy-img)
-[![npm version](https://img.shields.io/npm/v/handy-img.svg?style=flat-square)](https://www.npmjs.com/package/handy-img)
-[![npm downloads](https://img.shields.io/npm/dm/handy-img.svg?style=flat-square)](https://www.npmjs.com/package/handy-img)
-[![npm license](https://img.shields.io/npm/l/handy-img.svg?style=flat-square)](http://magicdawn.mit-license.org)
-
-## Install
-
-```sh
-pnpm add -g handy-img
-```
-
-## or invoke without install
-
-```
-# pnpm, recommend
-pnpm dlx handy-img
-
-# or npx
-npx handy-img
-
-# or pnpx
-pnpx handy-img
-
-# or yarn 2
-yarn dlx handy-img
-```
-
-# cli
-
-just type `himg` or `handy-img`
-
-```txt
-$ himg
-himg <命令>
-
-命令：
-  himg compress <file>  compress file                               [aliases: c]
-  himg info <file>      show info for file                          [aliases: i]
-
-选项：
-  --version  显示版本号                                                   [布尔]
-  --help     显示帮助信息                                                 [布尔]
-
-缺少 non-option 参数：传入了 0 个, 至少需要 1 个
-```
-
 ## `himg compress` or `himg c`
 
 ```
@@ -133,11 +80,3 @@ and img will keep same structure.
 ![image](https://user-images.githubusercontent.com/4067115/180051281-7721464c-dde1-4690-a241-fe525d1e676f.png)
 
 ![image](https://user-images.githubusercontent.com/4067115/180051359-ed180f35-a57d-478e-b122-eb77532f342a.png)
-
-## Changelog
-
-[CHANGELOG.md](CHANGELOG.md)
-
-## License
-
-the MIT License http://magicdawn.mit-license.org

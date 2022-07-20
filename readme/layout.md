@@ -13,13 +13,27 @@
 ## Install
 
 ```sh
-$ npm i -S handy-img
+pnpm add -g handy-img
 ```
 
+## or invoke without install
+
+```
+# pnpm, recommend
+pnpm dlx handy-img
+
+# or npx
+npx handy-img
+
+# or pnpx
+pnpx handy-img
+
+# or yarn 2
+yarn dlx handy-img
+```
 
 {% block extra %}
 {% endblock %}
-
 
 ## Changelog
 
