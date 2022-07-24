@@ -1,10 +1,10 @@
-export {metadata, decode} from './codec/decode'
+// inner libs
 import sharp from 'sharp'
-export {sharp}
-
-// encode
 import mozjpeg from 'node-mozjpeg'
-export {mozjpeg}
+export { sharp, mozjpeg }
 
-// compress
-export {mozjpegCompress} from './compress'
+// decode to metadata or Buffer
+export { SharpInput, metadata, decode } from './codec/decode'
+
+// high level compress API
+export { mozjpegCompress, sharpWebpCompress } from './compress'

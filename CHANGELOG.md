@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.3.3 2022-07-24
+
+- tidy api export, export `SharpInput` type
+
 ## v0.3.2 2022-06-17
 
 - add `-q` alias to `--quality`

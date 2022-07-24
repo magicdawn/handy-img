@@ -16,7 +16,7 @@ export async function mozjpegCompress(file: SharpInput, options?: Partial<Mozjpe
   return bufEncoded
 }
 
-export async function sharpWebp(
+export async function sharpWebpCompress(
   file: SharpInput,
   keepMetadata = true,
   options?: sharp.WebpOptions

@@ -7,7 +7,7 @@ import globby from 'globby'
 import path from 'path'
 import pmap from 'promise.map'
 import { mozjpegCompress } from '../compress'
-import { sharpWebp } from '../compress'
+import { sharpWebpCompress } from '../compress'
 
 type Codec = 'mozjpeg' | 'webp'
 
@@ -268,7 +268,7 @@ async function compress(
     })
     await fse.outputFile(outputPath, buf)
   } else {
-    const buf = await sharpWebp(input, keepMetadata, {
+    const buf = await sharpWebpCompress(input, keepMetadata, {
       quality: quality,
     })
     await fse.outputFile(outputPath, buf)
