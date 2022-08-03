@@ -4,12 +4,18 @@ import chalk from 'chalk'
 import { Command, Option, Usage } from 'clipanion'
 import fse from 'fs-extra'
 import globby from 'globby'
+import { performance } from 'node:perf_hooks'
+import { cpus } from 'os'
 import path from 'path'
 import pmap from 'promise.map'
-import { mozjpegCompress } from '../compress'
-import { sharpWebpCompress } from '../compress'
+import { mozjpegCompress, sharpWebpCompress } from '../compress'
+import { humanizer } from 'humanize-duration'
+
+const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
 
 type Codec = 'mozjpeg' | 'webp'
+
+const DEFAULT_CONCURRENCY = cpus().length - 2
 
 export class CompressCommand extends Command {
   static paths = [['compress'], ['c']]
@@ -52,7 +58,11 @@ export class CompressCommand extends Command {
   })
 
   quality = Option.String('-q,--quality', '82', {
-    description: 'quality',
+    description: 'quality, default `82`',
+  })
+
+  concurrency = Option.String('-c,--concurrency', DEFAULT_CONCURRENCY.toString(), {
+    description: `parallel limit, default cpu core count - 2, \`${DEFAULT_CONCURRENCY}\` on current machine`,
   })
 
   /**
@@ -60,11 +70,11 @@ export class CompressCommand extends Command {
    */
 
   dir = Option.String('-d,--dir', {
-    description: 'compress whole dir, and output to dir_compressed',
+    description: 'dir mode: compress whole dir, and output to dir_compressed',
   })
 
   dirSuffix = Option.String('--dir-suffix', '_compressed', {
-    description: 'suffix to append to original dir name when using -d,--dir mode',
+    description: `dir mode output dir: <original-dir>+\`suffix\`, default \`_compressed\``,
   })
 
   /**
@@ -79,9 +89,13 @@ export class CompressCommand extends Command {
     return this.run()
   }
 
+  get theConcurrency() {
+    return Number(this.concurrency)
+  }
+
   async run() {
     const { files, showTokens, ignoreCase, globCwd = process.cwd(), yes, dir } = this
-    const { output, codec, metadata, quality } = this
+    const { output, codec, metadata, quality, theConcurrency } = this
     // console.log(this)
 
     if (!this.files && !this.dir) {
@@ -169,7 +183,7 @@ export class CompressCommand extends Command {
 
           return compress(item, curOutput, codec as Codec, metadata, Number(quality))
         },
-        5
+        theConcurrency
       )
     }
 
@@ -239,15 +253,23 @@ export class CompressCommand extends Command {
             Number(quality)
           )
         },
-        5
+        theConcurrency
       )
     }
 
+    const start = performance.now()
     const inputMode = this.files ? 'files' : 'dir'
+
     if (inputMode === 'files') {
       await processFiles(files!)
     } else if (inputMode === 'dir') {
       await processDir(dir!)
+    }
+
+    if (this.yes) {
+      const costMs = performance.now() - start
+      const cost = fnHumanizeDuration(costMs)
+      console.log('%s cost %s', chalk.green('[compress:done]'), cost)
     }
   }
 }
