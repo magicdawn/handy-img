@@ -57,8 +57,8 @@ export class CompressCommand extends Command {
     description: 'keep metadata(only available with --codec webp)',
   })
 
-  quality = Option.String('-q,--quality', '82', {
-    description: 'quality, default `82`',
+  quality = Option.String('-q,--quality', '80', {
+    description: 'quality, default `80`',
   })
 
   concurrency = Option.String('-c,--concurrency', DEFAULT_CONCURRENCY.toString(), {
@@ -213,7 +213,11 @@ export class CompressCommand extends Command {
       const outputsRelative: string[] = []
 
       for (let item of resolvedFiles) {
-        const outputRelativeFilename = `${path.basename(item, path.extname(item))}.${targetExt}`
+        // item -> 切换 ext
+        const outputRelativeFilename = path.join(
+          path.dirname(item),
+          `${path.basename(item, path.extname(item))}.${targetExt}`
+        )
         outputs.push(`${outputDirResolved}/${outputRelativeFilename}`)
         outputsRelative.push(outputRelativeFilename)
 
