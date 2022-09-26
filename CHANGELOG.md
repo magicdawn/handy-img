@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.3.4 2022-09-26
+
+- fix: fix dir mode filename mistake & change default quality to 80
+- chore: add -c,--concurrency & duration report
+
 ## v0.3.3 2022-07-24
 
 - tidy api export, export `SharpInput` type
