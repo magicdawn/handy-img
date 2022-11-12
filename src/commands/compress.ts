@@ -14,7 +14,7 @@ import { humanizer } from 'humanize-duration'
 const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
 
 type Codec = 'mozjpeg' | 'webp'
-
+const AllOWED_CODEC: Codec[] = ['mozjpeg', 'webp']
 const DEFAULT_CONCURRENCY = cpus().length - 2
 
 export class CompressCommand extends Command {
@@ -73,7 +73,7 @@ export class CompressCommand extends Command {
     description: 'dir mode: compress whole dir, and output to dir_compressed',
   })
 
-  dirSuffix = Option.String('--dir-suffix', '_compressed', {
+  dirSuffix = Option.String('--dir-suffix', '', {
     description: `dir mode output dir: <original-dir>+\`suffix\`, default \`_compressed\``,
   })
 
@@ -89,14 +89,45 @@ export class CompressCommand extends Command {
     return this.run()
   }
 
-  get theConcurrency() {
-    return Number(this.concurrency)
+  get valitedArgs() {
+    let { codec, quality, concurrency } = this
+
+    if (!AllOWED_CODEC.includes(codec as Codec)) {
+      throw new Error('unsupported codec, supported: ' + AllOWED_CODEC.join(' or '))
+    }
+
+    let qualityAsNum = Number(quality)
+    let concurrencyAsNum = Number(concurrency)
+    if (isNaN(qualityAsNum)) throw new Error('expect quality as a number')
+    if (isNaN(concurrencyAsNum)) throw new Error('expect concurrency as a number')
+
+    return {
+      codec: codec as Codec,
+      quality: qualityAsNum,
+      concurrency: concurrencyAsNum,
+    }
+  }
+
+  get mappedArgs() {
+    const { codec, quality } = this.valitedArgs
+    const dirSuffix = this.dirSuffix || `_${codec}_q${quality}_compressed`
+
+    return { dirSuffix }
   }
 
   async run() {
-    const { files, showTokens, ignoreCase, globCwd = process.cwd(), yes, dir } = this
-    const { output, codec, metadata, quality, theConcurrency } = this
-    // console.log(this)
+    const {
+      files,
+      showTokens,
+      ignoreCase,
+      globCwd = process.cwd(),
+      yes,
+      dir,
+      output,
+      metadata,
+    } = this
+    const { codec, quality, concurrency } = this.valitedArgs
+    const { dirSuffix } = this.mappedArgs
 
     if (!this.files && !this.dir) {
       console.error('use -f,--files or -d,--dir to specify input imgs')
@@ -181,9 +212,9 @@ export class CompressCommand extends Command {
             chalk.yellow(curOutput)
           )
 
-          return compress(item, curOutput, codec as Codec, metadata, Number(quality))
+          return compress(item, curOutput, codec, metadata, quality)
         },
-        theConcurrency
+        concurrency
       )
     }
 
@@ -206,8 +237,8 @@ export class CompressCommand extends Command {
       })
 
       // append _compressed
-      const outputDirResolved = dirResolved + this.dirSuffix
-      const outputDirTitle = dirtitle + this.dirSuffix
+      const outputDirResolved = dirResolved + dirSuffix
+      const outputDirTitle = dirtitle + dirSuffix
 
       const outputs: string[] = []
       const outputsRelative: string[] = []
@@ -249,15 +280,9 @@ export class CompressCommand extends Command {
             chalk.yellow(outputDirTitle + '/' + outputsRelative[index])
           )
 
-          return compress(
-            path.join(dirResolved, item),
-            curOutput,
-            codec as Codec,
-            metadata,
-            Number(quality)
-          )
+          return compress(path.join(dirResolved, item), curOutput, codec, metadata, quality)
         },
-        theConcurrency
+        concurrency
       )
     }
 
