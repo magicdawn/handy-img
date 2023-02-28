@@ -10,6 +10,7 @@ import path from 'path'
 import pmap from 'promise.map'
 import { mozjpegCompress, sharpWebpCompress } from '../compress'
 import { humanizer } from 'humanize-duration'
+import { PathFinder } from 'mac-helper'
 
 const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
 
@@ -292,7 +293,16 @@ export class CompressCommand extends Command {
     if (inputMode === 'files') {
       await processFiles(files!)
     } else if (inputMode === 'dir') {
-      await processDir(dir!)
+      let usingDir = dir!
+      if (dir === '$PF') {
+        const d = await PathFinder.singleSelected()
+        if (!d) {
+          console.error('$PF can not map to selected')
+          process.exit(1)
+        }
+        usingDir = d
+      }
+      await processDir(usingDir)
     }
 
     if (this.yes) {
