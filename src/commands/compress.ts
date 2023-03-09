@@ -1,16 +1,17 @@
+import { finderSort } from '@magicdawn/finder-sort'
 import { getFilenameTokens, printFilenameTokens, renderFilenameTokens } from '@magicdawn/x-args'
 import bytes from 'bytes'
 import chalk from 'chalk'
 import { Command, Option, Usage } from 'clipanion'
 import fse from 'fs-extra'
 import globby from 'globby'
+import { humanizer } from 'humanize-duration'
+import { PathFinder } from 'mac-helper'
 import { performance } from 'node:perf_hooks'
 import { cpus } from 'os'
 import path from 'path'
 import pmap from 'promise.map'
 import { mozjpegCompress, sharpWebpCompress } from '../compress'
-import { humanizer } from 'humanize-duration'
-import { PathFinder } from 'mac-helper'
 
 const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
 
@@ -224,10 +225,12 @@ export class CompressCommand extends Command {
       const dirtitle = path.basename(dirResolved)
 
       const pattern = './**/*.{jpg,jpeg,png,webp,bmp}'
-      const resolvedFiles = globby.sync(pattern, {
+      let resolvedFiles = globby.sync(pattern, {
         caseSensitiveMatch: !ignoreCase,
         cwd: dirResolved,
       })
+      resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
+
       console.log(
         `${chalk.green('[globby]')}: mapping ${chalk.yellow(pattern)} in ${chalk.yellow(
           dirResolved
