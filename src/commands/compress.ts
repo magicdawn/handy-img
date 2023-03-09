@@ -152,7 +152,8 @@ export class CompressCommand extends Command {
 
     // reading this, so use arrow function
     const processFiles = async (files: string) => {
-      const resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+      let resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+      resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
       console.log('')
       console.log(
         `${chalk.green('[globby]')}: docs ${chalk.blue(
