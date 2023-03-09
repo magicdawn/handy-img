@@ -39,7 +39,7 @@ pnpx handy-img
 yarn dlx handy-img
 ```
 
-# cli
+## cli
 
 just type `himg` or `handy-img`
 
@@ -58,7 +58,7 @@ himg <命令>
 缺少 non-option 参数：传入了 0 个, 至少需要 1 个
 ```
 
-## `himg compress` or `himg c`
+### `himg compress` or `himg c`
 
 ```
 $ himg c -h
@@ -81,7 +81,7 @@ $ handy-img compress
   -y,--yes                     exec commands, default false(only preview commands, aka dry run)
 ```
 
-### flags
+#### flags
 
 | flag                        | desc                                                             | default       | remark                                               |
 | --------------------------- | ---------------------------------------------------------------- | ------------- | ---------------------------------------------------- |
@@ -97,9 +97,9 @@ $ handy-img compress
 | `--dir-suffix`              | suffix to append to original dir name when using -d,--dir mode   | `_compressed` |                                                      |
 | `-y,--yes`                  | exec commands, default false(only preview commands, aka dry run) | `false`       |                                                      |
 
-### usage
+## usage
 
-#### 0 TLDR
+### 0.TLDR
 
 just use dir mode, it's simple
 
@@ -107,15 +107,15 @@ just use dir mode, it's simple
 himg c -d '/some/dir/here' -y
 ```
 
-#### 1.decide input
+### 1.decide input
 
 ![image](https://user-images.githubusercontent.com/4067115/180050266-1e3a1f46-0e8d-486a-8ea2-8c2dac604a9f.png)
 
-#### 2.then use `-t,--tokens,--show-tokens` show available tokens
+### 2.then use `-t,--tokens,--show-tokens` show available tokens
 
 ![image](https://user-images.githubusercontent.com/4067115/180050603-bb4ea54d-cad6-4c91-b86d-0f6d48cde788.png)
 
-#### 3.write your output pattern & preview
+### 3.write your output pattern & preview
 
 example pattern `himg c -f './*.jpg' -t -o ':dir/:name_compressed.:ext'`
 ![image](https://user-images.githubusercontent.com/4067115/180050746-084418e3-1ac4-43d9-9e7e-5fe07728a60c.png)
@@ -123,7 +123,7 @@ example pattern `himg c -f './*.jpg' -t -o ':dir/:name_compressed.:ext'`
 example pattern `himg c -f './*.jpg' -t -o ':dir/compressed/:name.:ext'`
 ![image](https://user-images.githubusercontent.com/4067115/180050958-59196349-3693-4fef-9f92-c9520babccf3.png)
 
-#### 4.use `-y,--yes` to execute
+### 4.use `-y,--yes` to execute
 
 without this option, you will see what input will be processed and what file will be generated.
 but the compress action will not really execute
