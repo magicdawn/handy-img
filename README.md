@@ -92,6 +92,14 @@ $ handy-img compress
 
 ### usage
 
+#### 0 TLDR
+
+just use dir mode, it's simple
+
+```sh
+himg c -d '/some/dir/here' -y
+```
+
 #### 1.decide input
 
 ![image](https://user-images.githubusercontent.com/4067115/180050266-1e3a1f46-0e8d-486a-8ea2-8c2dac604a9f.png)
@@ -102,7 +110,7 @@ $ handy-img compress
 
 #### 3.write your output pattern & preview
 
-example patter `himg c -f './*.jpg' -t -o ':dir/:name_compressed.:ext'`
+example pattern `himg c -f './*.jpg' -t -o ':dir/:name_compressed.:ext'`
 ![image](https://user-images.githubusercontent.com/4067115/180050746-084418e3-1ac4-43d9-9e7e-5fe07728a60c.png)
 
 example pattern `himg c -f './*.jpg' -t -o ':dir/compressed/:name.:ext'`
