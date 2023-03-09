@@ -10,6 +10,13 @@
 [![npm downloads](https://img.shields.io/npm/dm/handy-img.svg?style=flat-square)](https://www.npmjs.com/package/handy-img)
 [![npm license](https://img.shields.io/npm/l/handy-img.svg?style=flat-square)](http://magicdawn.mit-license.org)
 
+## compress Features
+
+- [x] target mozjpeg / webp are supported. same as `@squoosh/cli`
+- [x] Node.js native addon, better performance than squoosh WASM version.
+- [x] batch process, support `--files` glob or dir mode `--dir`
+- [x] parallel compress. default concurrency `cpu-core-count - 2`
+
 ## Install
 
 ```sh

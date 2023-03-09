@@ -20,8 +20,7 @@
     "test": "mocha",
     "test-cover": "nyc --reporter=lcov --reporter=text mocha",
     "test-cover-ci": "nyc npm test && nyc report --reporter=text-lcov > coverage.lcov",
-    "report-cover": "codecov",
-    "gen-readme": "swig render ./readme/readme.md > README.md && prettier --write README.md"
+    "report-cover": "codecov"
   },
   "repository": {
     "type": "git",
