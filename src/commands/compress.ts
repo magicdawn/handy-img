@@ -326,28 +326,42 @@ async function compress(
 ) {
   const outputPath = path.resolve(output)
 
+  let buf: Buffer
   if (codec === 'mozjpeg') {
-    const buf = await mozjpegCompress(input, {
+    buf = await mozjpegCompress(input, {
       progressive: true,
       quality,
     })
-    await fse.outputFile(outputPath, buf)
   } else {
-    const buf = await sharpWebpCompress(input, keepMetadata, {
+    buf = await sharpWebpCompress(input, keepMetadata, {
       quality: quality,
     })
-    await fse.outputFile(outputPath, buf)
   }
 
-  const [originalSize, newSize] = await Promise.all(
-    [input, outputPath].map((f) => fse.stat(f).then((stat) => stat.size))
-  )
+  const originalSize = await fse.stat(input).then((stat) => stat.size)
+  const newSize = buf.length
 
-  console.log(
-    '%s write to %s, %s -> %s',
-    chalk.green('[compress:success]'),
-    output,
-    bytes(originalSize),
-    bytes(newSize)
-  )
+  // 离谱, 压缩结果比原始还大
+  if (newSize >= originalSize) {
+    await fse.copyFile(input, outputPath)
+    console.log(
+      '%s copy to %s, for %s -> %s',
+      chalk.bgYellow('[compress:skip]'),
+      output,
+      bytes(originalSize),
+      bytes(newSize)
+    )
+  }
+
+  // 正常情况
+  else {
+    await fse.outputFile(outputPath, buf)
+    console.log(
+      '%s write to %s, %s -> %s',
+      chalk.green('[compress:success]'),
+      output,
+      bytes(originalSize),
+      bytes(newSize)
+    )
+  }
 }
