@@ -12,7 +12,7 @@
 
 ## compress Features
 
-- [x] target mozjpeg / webp are supported. same as `@squoosh/cli`
+- [x] target mozjpeg / webp are supported. `@squoosh/cli` supports more format.
 - [x] Node.js native addon, better performance than squoosh WASM version.
 - [x] batch process, support `--files` glob or dir mode `--dir`
 - [x] parallel compress. default concurrency `cpu-core-count - 2`
