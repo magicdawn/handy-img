@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.4.1 2023-03-13
+
+- feat: ignore libvips warning, sharp fails when libvips error
+- feat: use copy original when compressed size > original size
+
 ## v0.4.0 2023-03-09
 
 - feat: add `_:codec_q:quality` to dir suffix, different args won't overwrite.
