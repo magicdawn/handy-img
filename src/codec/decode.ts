@@ -10,7 +10,7 @@ export type SharpInput = NonNullable<Parameters<typeof sharp>[0]>
  * @see https://sharp.pixelplumbing.com/api-input#metadata
  */
 export async function metadata(input: SharpInput) {
-  const meta = await sharp(input).metadata()
+  const meta = await sharp(input, { failOn: 'error' }).metadata()
   return meta
 }
 
@@ -18,7 +18,7 @@ export async function metadata(input: SharpInput) {
  * decode img to raw RGB|RGBA pixel data
  */
 export async function decode(input: SharpInput) {
-  const { data, info } = await sharp(input)
+  const { data, info } = await sharp(input, { failOn: 'error' })
     .ensureAlpha()
     .raw()
     .toBuffer({ resolveWithObject: true })
