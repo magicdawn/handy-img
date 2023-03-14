@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## v0.4.2 2023-03-14
+
+- feat: make log a bit nicer. (log-symbols, progress)
+- feat: modify default concurrency, add tip for UV_THREADPOOL_SIZE
+
 ## v0.4.1 2023-03-13
 
 - feat: ignore libvips warning, sharp fails when libvips error
