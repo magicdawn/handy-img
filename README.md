@@ -15,7 +15,7 @@
 - [x] target mozjpeg / webp are supported. `@squoosh/cli` supports more format.
 - [x] Node.js native addon, better performance than squoosh WASM version.
 - [x] batch process, support `--files` glob or dir mode `--dir`
-- [x] parallel compress. default concurrency `cpu-core-count - 2`
+- [x] parallel compress. set your `UV_THREADPOOL_SIZE=64` (see [this](https://www.sebastienvercammen.be/your-libuv-thread-pool-size-is-too-small/)) and handy-img will use this as concurrency.
 
 ## Install
 

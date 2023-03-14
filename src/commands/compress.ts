@@ -6,18 +6,25 @@ import { Command, Option, Usage } from 'clipanion'
 import fse from 'fs-extra'
 import globby from 'globby'
 import { humanizer } from 'humanize-duration'
+import LogSymbols from 'log-symbols'
 import { PathFinder } from 'mac-helper'
 import { performance } from 'node:perf_hooks'
 import { cpus } from 'os'
 import path from 'path'
 import pmap from 'promise.map'
+import { decode, metadata } from '../codec/decode'
 import { mozjpegCompress, sharpWebpCompress } from '../compress'
-
 const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
 
 type Codec = 'mozjpeg' | 'webp'
 const AllOWED_CODEC: Codec[] = ['mozjpeg', 'webp']
-const DEFAULT_CONCURRENCY = cpus().length - 2
+
+const DEFAULT_CONCURRENCY = process.env.UV_THREADPOOL_SIZE
+  ? Number(process.env.UV_THREADPOOL_SIZE)
+  : Math.round(cpus().length * 1.5) // 受限于 UV_THREADPOOL_SIZE, 再大到 libuv 那里都得排队
+
+// general purpose
+const DEFAULT_QUALITY = 80
 
 export class CompressCommand extends Command {
   static paths = [['compress'], ['c']]
@@ -59,12 +66,12 @@ export class CompressCommand extends Command {
     description: 'keep metadata(only available with --codec webp)',
   })
 
-  quality = Option.String('-q,--quality', '80', {
-    description: 'quality, default `80`',
+  quality = Option.String('-q,--quality', DEFAULT_QUALITY.toString(), {
+    description: `quality, default \`${DEFAULT_QUALITY}\``,
   })
 
   concurrency = Option.String('-c,--concurrency', DEFAULT_CONCURRENCY.toString(), {
-    description: `parallel limit, default cpu core count - 2, \`${DEFAULT_CONCURRENCY}\` on current machine`,
+    description: `parallel limit, current default \`${DEFAULT_CONCURRENCY}\`, influenced by UV_THREADPOOL_SIZE and cpu-core-count`,
   })
 
   /**
@@ -208,14 +215,21 @@ export class CompressCommand extends Command {
         async (item, index) => {
           const curOutput = outputs[index]
 
-          console.log(
-            '%s: %s -> %s',
-            chalk.green('[compress:start]'),
-            chalk.green(item),
-            chalk.yellow(curOutput)
-          )
+          const progress = `${(index + 1)
+            .toString()
+            .padStart(resolvedFiles.length.toString().length, '0')}/${resolvedFiles.length}`
 
-          return compress(item, curOutput, codec, metadata, quality)
+          // item, curOutput,
+          return compress({
+            inputDisplay: item,
+            inputFullpath: path.resolve(item),
+            outputDisplay: curOutput,
+            outputFullpath: path.resolve(curOutput),
+            progress,
+            codec,
+            metadata,
+            quality,
+          })
         },
         concurrency
       )
@@ -276,16 +290,26 @@ export class CompressCommand extends Command {
       await pmap(
         resolvedFiles,
         async (item, index) => {
-          const curOutput = outputs[index]
+          const inputDisplay = dirtitle + '/' + item
+          const inputFullpath = path.join(dirResolved, item)
 
-          console.log(
-            '%s: %s -> %s',
-            chalk.green('[compress:start]'),
-            chalk.green(dirtitle + '/' + item),
-            chalk.yellow(outputDirTitle + '/' + outputsRelative[index])
-          )
+          const outputDisplay = outputDirTitle + '/' + outputsRelative[index]
+          const outputFullpath = outputs[index]
 
-          return compress(path.join(dirResolved, item), curOutput, codec, metadata, quality)
+          const progress = `${(index + 1)
+            .toString()
+            .padStart(resolvedFiles.length.toString().length, '0')}/${resolvedFiles.length}`
+
+          return compress({
+            inputDisplay,
+            inputFullpath,
+            outputDisplay,
+            outputFullpath,
+            progress,
+            codec,
+            metadata,
+            quality,
+          })
         },
         concurrency
       )
@@ -312,42 +336,104 @@ export class CompressCommand extends Command {
     if (this.yes) {
       const costMs = performance.now() - start
       const cost = fnHumanizeDuration(costMs)
-      console.log('%s cost %s', chalk.green('[compress:done]'), cost)
+      console.log('%s %s cost %s', LogSymbols.success, chalk.green('[compress:done]'), cost)
     }
   }
 }
 
-async function compress(
-  input: string,
-  output: string,
-  codec: Codec,
-  keepMetadata: boolean,
+async function compress({
+  inputDisplay,
+  inputFullpath,
+  outputDisplay,
+  outputFullpath,
+  progress,
+  codec,
+  metadata,
+  quality,
+  force = false,
+}: {
+  inputDisplay: string
+  inputFullpath: string
+  outputDisplay: string
+  outputFullpath: string
+  progress: string
+  codec: Codec
+  metadata: boolean
   quality: number
-) {
-  const outputPath = path.resolve(output)
+  force?: boolean
+}) {
+  // skip
+  // start
+  // done
+  // error
+  const len = 5
 
-  let buf: Buffer
-  if (codec === 'mozjpeg') {
-    buf = await mozjpegCompress(input, {
-      progressive: true,
-      quality,
-    })
-  } else {
-    buf = await sharpWebpCompress(input, keepMetadata, {
-      quality: quality,
-    })
+  // 文件名引号
+  inputDisplay = chalk.yellow(`'${inputDisplay}'`)
+  outputDisplay = chalk.cyan(`'${outputDisplay}'`)
+
+  // validate existing compressed file
+  if (!force && (await outputValid(inputFullpath, outputFullpath))) {
+    console.log(
+      '%s %s (%s) %s -> %s',
+      LogSymbols.success,
+      chalk.green('[compress:skip]') + ' ',
+      progress,
+      inputDisplay,
+      outputDisplay
+    )
+    return
   }
 
-  const originalSize = await fse.stat(input).then((stat) => stat.size)
+  // start
+  console.log(
+    '%s %s (%s) %s -> %s',
+    LogSymbols.info,
+    chalk.blue('[compress:start]'),
+    progress,
+    inputDisplay,
+    outputDisplay
+  )
+
+  let buf: Buffer | undefined
+  try {
+    if (codec === 'mozjpeg') {
+      buf = await mozjpegCompress(inputFullpath, {
+        progressive: true,
+        quality,
+      })
+    } else {
+      buf = await sharpWebpCompress(inputFullpath, metadata, {
+        quality: quality,
+      })
+    }
+  } catch (err) {
+    console.error(
+      `%s %s (%s) failed to compress %s -> %s\n  error: \n`,
+      LogSymbols.error,
+      chalk.bgRed('[compress:error]'),
+      progress,
+      inputDisplay,
+      outputDisplay,
+      // line 2
+      err,
+      '\n'
+    )
+    return
+  }
+
+  const originalSize = await fse.stat(inputFullpath).then((stat) => stat.size)
   const newSize = buf.length
 
   // 离谱, 压缩结果比原始还大
   if (newSize >= originalSize) {
-    await fse.copyFile(input, outputPath)
+    await fse.copyFile(inputFullpath, outputFullpath)
     console.log(
-      '%s copy to %s, for %s -> %s',
-      chalk.bgYellow('[compress:skip]'),
-      output,
+      '%s %s (%s) copy to %s, for %s -> %s',
+      LogSymbols.warning,
+      chalk.bgYellow('[compress:skip]') + ' ',
+      progress,
+      outputDisplay,
       bytes(originalSize),
       bytes(newSize)
     )
@@ -355,13 +441,39 @@ async function compress(
 
   // 正常情况
   else {
-    await fse.outputFile(outputPath, buf)
+    await fse.outputFile(outputFullpath, buf)
     console.log(
-      '%s write to %s, %s -> %s',
-      chalk.green('[compress:success]'),
-      output,
+      '%s %s (%s) write to %s, %s -> %s',
+      LogSymbols.success,
+      chalk.green('[compress:done]') + ' ',
+      progress,
+      outputDisplay,
       bytes(originalSize),
       bytes(newSize)
     )
   }
+}
+
+async function outputValid(inputFullpath: string, outputFullpath: string): Promise<boolean> {
+  if (!(await fse.exists(outputFullpath))) return false
+
+  const stat = await fse.stat(outputFullpath)
+  if (!(stat && stat.size > 0)) return false
+
+  const inputMeta = await metadata(inputFullpath)
+  try {
+    // width & height match
+    const outputMeta = await metadata(outputFullpath)
+    if (inputMeta.width !== outputMeta.width || inputMeta.height !== outputMeta.height) {
+      return false
+    }
+
+    // try decode
+    await decode(outputFullpath)
+  } catch (e) {
+    return false
+  }
+
+  // all pass, valid
+  return true
 }

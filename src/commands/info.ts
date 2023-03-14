@@ -16,7 +16,7 @@ export class InfoCommand extends Command {
   }
 }
 
-async function main(argv: { file: string }) {
+export async function main(argv: { file: string }) {
   let { file } = argv
   if (file) file = path.resolve(file)
 

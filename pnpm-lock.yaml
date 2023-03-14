@@ -25,6 +25,7 @@ specifiers:
   humanize-duration: ^3.28.0
   husky: ^8.0.3
   lint-staged: ^13.2.0
+  log-symbols: ^4.1.0
   mac-helper: ^0.0.2
   mocha: 10.2.0
   node-mozjpeg: ^1.0.1
@@ -48,6 +49,7 @@ dependencies:
   fs-extra: 11.1.0
   globby: 11.1.0
   humanize-duration: 3.28.0
+  log-symbols: 4.1.0
   mac-helper: 0.0.2
   node-mozjpeg: 1.0.1
   promise.map: 0.5.0
@@ -2195,7 +2197,6 @@ packages:
   /is-unicode-supported/0.1.0:
     resolution: {integrity: sha512-knxG2q4UC3u8stRGyAVJCOdxFmv5DZiRcdlIaAQXAbSfJya+OhopNotLQrstBhququ4ZpuKbDc/8S6mgXgPFPw==}
     engines: {node: '>=10'}
-    dev: true
 
   /is-weakref/1.0.2:
     resolution: {integrity: sha512-qctsuLZmIQ0+vSSMfoVvyFe2+GSEvnmZ2ezTup1SBse9+twCCeial6EEi3Nc2KFcf6+qz2FBPnjXsk8xhKSaPQ==}
@@ -2426,7 +2427,6 @@ packages:
     dependencies:
       chalk: 4.1.2
       is-unicode-supported: 0.1.0
-    dev: true
 
   /log-update/4.0.0:
     resolution: {integrity: sha512-9fkkDevMefjg0mmzWFBW8YkFP91OrizzkW3diF7CpG+S2EYdy4+TVfGwz1zeF8x7hCx1ovSPTOE9Ngib74qqUg==}
