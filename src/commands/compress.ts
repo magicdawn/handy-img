@@ -86,6 +86,10 @@ export class CompressCommand extends Command {
     description: `dir mode output dir: <original-dir>+\`suffix\`, default \`_compressed\``,
   })
 
+  handleOtherFiles = Option.String('-O,--other,--others,--other-files', '', {
+    description: 'copy/move none image files when using dir mode',
+  })
+
   /**
    * safty
    */
@@ -240,16 +244,22 @@ export class CompressCommand extends Command {
       const dirtitle = path.basename(dirResolved)
 
       const pattern = './**/*.{jpg,jpeg,png,webp,bmp}'
-      let resolvedFiles = globby.sync(pattern, {
-        caseSensitiveMatch: !ignoreCase,
-        cwd: dirResolved,
-      })
+      let resolvedFiles = globby.sync(
+        [
+          pattern,
+          '!**/*_{mozjpeg,webp}_q[0-9][0-9]_compressed/*', // ignore compressed dir
+        ],
+        {
+          caseSensitiveMatch: !ignoreCase,
+          cwd: dirResolved,
+        }
+      )
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
 
       console.log(
         `${chalk.green('[globby]')}: mapping ${chalk.yellow(pattern)} in ${chalk.yellow(
           dirResolved
-        )} to ${chalk.yellow(resolvedFiles.length)} files ->`
+        )} to ${chalk.yellow(resolvedFiles.length)} files :`
       )
       resolvedFiles.forEach((f) => {
         console.log(`  ${chalk.cyan(f)}`)
@@ -281,38 +291,120 @@ export class CompressCommand extends Command {
         }
       }
 
+      // start work
+      if (this.yes) {
+        await pmap(
+          resolvedFiles,
+          async (item, index) => {
+            const inputDisplay = dirtitle + '/' + item
+            const inputFullpath = path.join(dirResolved, item)
+            const outputDisplay = outputDirTitle + '/' + outputsRelative[index]
+            const outputFullpath = outputs[index]
+            const progress = `${(index + 1)
+              .toString()
+              .padStart(resolvedFiles.length.toString().length, '0')}/${resolvedFiles.length}`
+            return compress({
+              inputDisplay,
+              inputFullpath,
+              outputDisplay,
+              outputFullpath,
+              progress,
+              codec,
+              metadata,
+              quality,
+            })
+          },
+          concurrency
+        )
+      }
+
+      // other files
+      const processOtherFiles = async () => {
+        if (!this.handleOtherFiles) return
+
+        if (!['move', 'copy'].includes(this.handleOtherFiles)) {
+          console.error('expect move/copy for --other-files')
+          return
+        }
+
+        let otherFiles = globby.sync(
+          [
+            // all files
+            './**/*',
+            // '!./**/*.{jpg,jpeg,png,webp,bmp}',
+            // ignore macOS resource fork file
+            '!**/.DS_Store',
+            '!**/._*',
+          ],
+          {
+            caseSensitiveMatch: !ignoreCase,
+            cwd: dirResolved,
+            dot: true, // 匹配 .file
+          }
+        )
+        // 去除已经处理的 img 文件
+        otherFiles = otherFiles.filter((item) => {
+          return !resolvedFiles.includes(item)
+        })
+        otherFiles = finderSort(otherFiles, { folderFirst: true })
+
+        console.log('')
+        console.log(`${chalk.green('[other-files]')}: %s`, this.handleOtherFiles)
+        console.log(
+          `${chalk.green('[globby]')}: found ${chalk.yellow(
+            otherFiles.length
+          )} none image files in ${chalk.yellow(dirResolved)} :`
+        )
+        otherFiles.forEach((f) => {
+          console.log(`  ${chalk.cyan(f)}`)
+        })
+        console.log('')
+
+        if (!this.yes) {
+          otherFiles.forEach((file) => {
+            console.log(
+              '%s: %s %s -> %s',
+              chalk.green('[compress:preview]'),
+              this.handleOtherFiles,
+              chalk.green(dirtitle + '/' + file),
+              chalk.yellow(outputDirTitle + '/' + file)
+            )
+          })
+        }
+
+        if (this.yes) {
+          await pmap(
+            otherFiles,
+            async (file) => {
+              const src = path.join(dirResolved, file)
+              const dest = path.join(outputDirResolved, file)
+
+              await fse.ensureDir(path.dirname(dest))
+
+              console.log(
+                '%s: %s %s -> %s',
+                chalk.green(`[compress:${this.handleOtherFiles}-other-files]`),
+                this.handleOtherFiles,
+                chalk.green(dirtitle + '/' + file),
+                chalk.yellow(outputDirTitle + '/' + file)
+              )
+
+              if (this.handleOtherFiles === 'move') {
+                await fse.move(src, dest)
+              } else if (this.handleOtherFiles === 'copy') {
+                await fse.copyFile(src, dest)
+              }
+            },
+            5
+          )
+        }
+      }
+      await processOtherFiles()
+
       if (!this.yes) {
         previewingTip()
         return
       }
-
-      // start work
-      await pmap(
-        resolvedFiles,
-        async (item, index) => {
-          const inputDisplay = dirtitle + '/' + item
-          const inputFullpath = path.join(dirResolved, item)
-
-          const outputDisplay = outputDirTitle + '/' + outputsRelative[index]
-          const outputFullpath = outputs[index]
-
-          const progress = `${(index + 1)
-            .toString()
-            .padStart(resolvedFiles.length.toString().length, '0')}/${resolvedFiles.length}`
-
-          return compress({
-            inputDisplay,
-            inputFullpath,
-            outputDisplay,
-            outputFullpath,
-            progress,
-            codec,
-            metadata,
-            quality,
-          })
-        },
-        concurrency
-      )
     }
 
     const start = performance.now()
@@ -321,16 +413,24 @@ export class CompressCommand extends Command {
     if (inputMode === 'files') {
       await processFiles(files!)
     } else if (inputMode === 'dir') {
-      let usingDir = dir!
       if (dir === '$PF') {
-        const d = await PathFinder.singleSelected()
-        if (!d) {
-          console.error('$PF can not map to selected')
+        const pfSelectedDirs = await PathFinder.allSelected()
+        if (!pfSelectedDirs.length) {
+          console.error('$PF has no select')
           process.exit(1)
         }
-        usingDir = d
+
+        console.log('$PF maps to :')
+        pfSelectedDirs.forEach((dir) => {
+          console.log(` ${chalk.cyan(dir)}`)
+        })
+
+        for (const currentDir of pfSelectedDirs) {
+          await processDir(currentDir)
+        }
+      } else {
+        await processDir(this.dir!)
       }
-      await processDir(usingDir)
     }
 
     if (this.yes) {
