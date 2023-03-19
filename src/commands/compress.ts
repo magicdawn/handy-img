@@ -485,16 +485,6 @@ async function compress({
     return
   }
 
-  // start
-  // console.log(
-  //   '%s %s (%s) %s -> %s',
-  //   LogSymbols.info,
-  //   chalk.blue('[compress:start]'),
-  //   progress,
-  //   inputDisplay,
-  //   outputDisplay
-  // )
-
   let buf: Buffer | undefined
   try {
     if (codec === 'mozjpeg') {
@@ -532,7 +522,7 @@ async function compress({
     console.log(
       '%s %s (%s) copy to %s, for %s -> %s',
       LogSymbols.warning,
-      chalk.bgYellow('[compress:skip]') + ' ',
+      chalk.bgYellow('[compress:skip]'),
       progress,
       outputDisplay,
       bytes(originalSize),
@@ -546,7 +536,7 @@ async function compress({
     console.log(
       '%s %s (%s) write to %s, %s -> %s',
       LogSymbols.success,
-      chalk.green('[compress:done]') + ' ',
+      chalk.green('[compress:done]'),
       progress,
       outputDisplay,
       bytes(originalSize),
