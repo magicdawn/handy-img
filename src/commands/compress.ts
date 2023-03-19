@@ -486,14 +486,14 @@ async function compress({
   }
 
   // start
-  console.log(
-    '%s %s (%s) %s -> %s',
-    LogSymbols.info,
-    chalk.blue('[compress:start]'),
-    progress,
-    inputDisplay,
-    outputDisplay
-  )
+  // console.log(
+  //   '%s %s (%s) %s -> %s',
+  //   LogSymbols.info,
+  //   chalk.blue('[compress:start]'),
+  //   progress,
+  //   inputDisplay,
+  //   outputDisplay
+  // )
 
   let buf: Buffer | undefined
   try {
@@ -527,6 +527,7 @@ async function compress({
 
   // 离谱, 压缩结果比原始还大
   if (newSize >= originalSize) {
+    await fse.ensureDir(path.dirname(outputFullpath)) // 需要
     await fse.copyFile(inputFullpath, outputFullpath)
     console.log(
       '%s %s (%s) copy to %s, for %s -> %s',
