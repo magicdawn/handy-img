@@ -3,10 +3,12 @@ import { getFilenameTokens, printFilenameTokens, renderFilenameTokens } from '@m
 import bytes from 'bytes'
 import chalk from 'chalk'
 import { Command, Option, Usage } from 'clipanion'
+import figures from 'figures'
 import fse from 'fs-extra'
 import globby from 'globby'
 import { humanizer } from 'humanize-duration'
 import LogSymbols from 'log-symbols'
+
 import { PathFinder } from 'mac-helper'
 import { performance } from 'node:perf_hooks'
 import { cpus } from 'os'
@@ -514,19 +516,32 @@ async function compress({
 
   const originalSize = await fse.stat(inputFullpath).then((stat) => stat.size)
   const newSize = buf.length
+  const rate = newSize / originalSize
+  const changedRate = rate - 1
 
   // 离谱, 压缩结果比原始还大
-  if (newSize >= originalSize) {
-    await fse.ensureDir(path.dirname(outputFullpath)) // 需要
+  // or 压缩结果不理想, reduce size 不到 5%
+  // TODO: make 0.95 configurable
+  const useOriginal = rate >= 1 || rate > 0.95
+
+  const content =
+    changedRate > 0
+      ? `${figures.arrowUp} ${Math.round(changedRate * 100)}%`
+      : `${figures.arrowDown} ${Math.round(-changedRate * 100)}%`
+  const changedRateDisplay = useOriginal ? chalk.bgYellow(content) : chalk.bgGreen(content)
+
+  if (useOriginal) {
+    await fse.ensureDir(path.dirname(outputFullpath)) // 需要 ensureDir
     await fse.copyFile(inputFullpath, outputFullpath)
     console.log(
-      '%s %s (%s) copy to %s, for %s -> %s',
+      '%s %s (%s) discard compress result & copy to %s, for %s -> %s %s',
       LogSymbols.warning,
-      chalk.bgYellow('[compress:skip]'),
+      chalk.bgYellow('[compress:copy]'),
       progress,
       outputDisplay,
       bytes(originalSize),
-      bytes(newSize)
+      bytes(newSize),
+      changedRateDisplay
     )
   }
 
@@ -534,13 +549,14 @@ async function compress({
   else {
     await fse.outputFile(outputFullpath, buf)
     console.log(
-      '%s %s (%s) write to %s, %s -> %s',
+      '%s %s (%s) write to %s, %s -> %s %s',
       LogSymbols.success,
       chalk.green('[compress:done]'),
       progress,
       outputDisplay,
       bytes(originalSize),
-      bytes(newSize)
+      bytes(newSize),
+      changedRateDisplay
     )
   }
 }
