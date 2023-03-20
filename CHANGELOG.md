@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.4.3 2023-03-20
+
+- aa3e245 feat: discard when compress ration >= 0.95, add reduce size ratio
+- d235b1f chore: log tweak
+- 58e4db0 feat: rm compress:start label
+- b540db9 feat: add --other move/copy for none image files handling in dir mode
+
 ## v0.4.2 2023-03-14
 
 - feat: make log a bit nicer. (log-symbols, progress)
