@@ -1,6 +1,6 @@
 {
   "name": "handy-img",
-  "version": "0.4.3",
+  "version": "0.5.0",
   "description": "handy img tool and API",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
