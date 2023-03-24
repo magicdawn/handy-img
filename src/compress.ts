@@ -16,6 +16,24 @@ export async function mozjpegCompress(file: SharpInput, options?: Partial<Mozjpe
   return bufEncoded
 }
 
+export async function sharpMozjpegCompress(
+  file: SharpInput,
+  keepMetadata = true,
+  options?: sharp.JpegOptions
+) {
+  let img = sharp(file).jpeg({
+    mozjpeg: true,
+    ...options,
+  })
+
+  if (keepMetadata) {
+    img = img.withMetadata()
+  }
+
+  const buf = await img.toBuffer()
+  return buf
+}
+
 export async function sharpWebpCompress(
   file: SharpInput,
   keepMetadata = true,
@@ -27,6 +45,6 @@ export async function sharpWebpCompress(
     img = img.withMetadata()
   }
 
-  const { data } = await img.toBuffer({ resolveWithObject: true })
-  return data
+  const buf = await img.toBuffer()
+  return buf
 }

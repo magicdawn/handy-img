@@ -1,5 +1,11 @@
 # CHANGELOG
 
+## v0.5.0 2023-03-24
+
+- feat: add `--files '$PF'` support
+- feat: rename prev `--codec mozjpeg` to `mozjpeg-raw`, which use [`node-mozjpeg`](https://www.npmjs.com/package/node-mozjpeg) package
+- feat: make `--codec mozjepg` use sharp's builtin mozjpeg, for smaller size & better performance in same output condition(quality).
+
 ## v0.4.3 2023-03-20
 
 - aa3e245 feat: discard when compress ration >= 0.95, add reduce size ratio

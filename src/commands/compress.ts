@@ -8,18 +8,23 @@ import fse from 'fs-extra'
 import globby from 'globby'
 import { humanizer } from 'humanize-duration'
 import LogSymbols from 'log-symbols'
-
 import { PathFinder } from 'mac-helper'
 import { performance } from 'node:perf_hooks'
 import { cpus } from 'os'
 import path from 'path'
 import pmap from 'promise.map'
 import { decode, metadata } from '../codec/decode'
-import { mozjpegCompress, sharpWebpCompress } from '../compress'
+import { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from '../compress'
+
 const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
 
-type Codec = 'mozjpeg' | 'webp'
-const AllOWED_CODEC: Codec[] = ['mozjpeg', 'webp']
+// 2023-03-24:
+// sharp 在 2021 内置了 mozjepg codec
+// 测试下来, 同 quality, 比 mozjpeg 更快, size 更小, 还能 keep metadata
+// mozjpeg 改成 mozjpeg-raw
+// mozjpeg 转成 sharp 内置的 mozjepg
+const AllOWED_CODEC = ['mozjpeg', 'webp', 'mozjpeg-raw'] as const
+type Codec = typeof AllOWED_CODEC extends ReadonlyArray<infer T> ? T : never
 
 const DEFAULT_CONCURRENCY = process.env.UV_THREADPOOL_SIZE
   ? Number(process.env.UV_THREADPOOL_SIZE)
@@ -28,11 +33,20 @@ const DEFAULT_CONCURRENCY = process.env.UV_THREADPOOL_SIZE
 // general purpose
 const DEFAULT_QUALITY = 80
 
+const DIR_IMG_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'bmp']
+const DIR_IMG_PATTERN = `./**/*.{${DIR_IMG_EXTS.join(',')}}`
+
 export class CompressCommand extends Command {
   static paths = [['compress'], ['c']]
 
   static usage: Usage = {
     description: 'compress img',
+    details: `
+		codec detail \n
+			- mozjpeg: use sharp jpeg({ mozjepg: true }), aka sharp's built in mozjpeg
+			- webp: use sharp webp
+			- mozjepg-raw: use magicdawn/node-mozjepg
+    `,
   }
 
   /**
@@ -60,12 +74,12 @@ export class CompressCommand extends Command {
     description: 'output patterns',
   })
 
-  codec = Option.String('--codec', 'mozjpeg', {
-    description: 'Allowed codec: `mozjpeg` or `webp`',
+  codec = Option.String('-C,--codec', 'mozjpeg' satisfies Codec, {
+    description: `Allowed codec: ${AllOWED_CODEC.map((c) => `\`${c}\``).join(' or ')}`,
   })
 
   metadata = Option.Boolean('--metadata', true, {
-    description: 'keep metadata(only available with --codec webp)',
+    description: 'keep metadata(not available with --codec mozjpeg)',
   })
 
   quality = Option.String('-q,--quality', DEFAULT_QUALITY.toString(), {
@@ -149,7 +163,7 @@ export class CompressCommand extends Command {
       return
     }
 
-    const targetExt = codec === 'mozjpeg' ? 'jpg' : 'webp'
+    const targetExt = codec === 'webp' ? 'webp' : 'jpg'
 
     const previewingTip = () => {
       console.log('')
@@ -165,7 +179,29 @@ export class CompressCommand extends Command {
 
     // reading this, so use arrow function
     const processFiles = async (files: string) => {
-      let resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+      let resolvedFiles: string[] = []
+
+      if (files === '$PF') {
+        resolvedFiles = await PathFinder.allSelected()
+        resolvedFiles = resolvedFiles.filter((item) => {
+          const basename = path.basename(item)
+          const ext = path.extname(item).slice(1).toLowerCase()
+          let stat: fse.Stats | undefined
+          return (
+            !basename.startsWith('.') &&
+            DIR_IMG_EXTS.includes(ext) &&
+            (stat = fse.statSync(item)) &&
+            stat.isFile()
+          )
+        })
+        if (!resolvedFiles.length) {
+          console.error('$PF has no valid imgs')
+          process.exit(1)
+        }
+      } else {
+        resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+      }
+
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
       console.log('')
       console.log(
@@ -188,7 +224,7 @@ export class CompressCommand extends Command {
         tokens.ext = targetExt
 
         // help decide -o
-        if (showTokens) {
+        if (showTokens || !output) {
           console.log('') // split
           console.log('%s for %s', chalk.green('[tokens]'), chalk.yellow(item))
           printFilenameTokens(tokens)
@@ -216,39 +252,40 @@ export class CompressCommand extends Command {
       }
 
       // start work
-      await pmap(
-        resolvedFiles,
-        async (item, index) => {
-          const curOutput = outputs[index]
+      if (this.yes && this.output) {
+        await pmap(
+          resolvedFiles,
+          async (item, index) => {
+            const curOutput = outputs[index]
 
-          const progress = `${(index + 1)
-            .toString()
-            .padStart(resolvedFiles.length.toString().length, '0')}/${resolvedFiles.length}`
+            const progress = `${(index + 1)
+              .toString()
+              .padStart(resolvedFiles.length.toString().length, '0')}/${resolvedFiles.length}`
 
-          // item, curOutput,
-          return compress({
-            inputDisplay: item,
-            inputFullpath: path.resolve(item),
-            outputDisplay: curOutput,
-            outputFullpath: path.resolve(curOutput),
-            progress,
-            codec,
-            metadata,
-            quality,
-          })
-        },
-        concurrency
-      )
+            // item, curOutput,
+            return compress({
+              inputDisplay: item,
+              inputFullpath: path.resolve(item),
+              outputDisplay: curOutput,
+              outputFullpath: path.resolve(curOutput),
+              progress,
+              codec,
+              metadata,
+              quality,
+            })
+          },
+          concurrency
+        )
+      }
     }
 
     const processDir = async (dir: string) => {
       const dirResolved = path.resolve(dir)
       const dirtitle = path.basename(dirResolved)
 
-      const pattern = './**/*.{jpg,jpeg,png,webp,bmp}'
       let resolvedFiles = globby.sync(
         [
-          pattern,
+          DIR_IMG_PATTERN,
           '!**/*_{mozjpeg,webp}_q[0-9][0-9]_compressed/*', // ignore compressed dir
         ],
         {
@@ -259,7 +296,7 @@ export class CompressCommand extends Command {
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
 
       console.log(
-        `${chalk.green('[globby]')}: mapping ${chalk.yellow(pattern)} in ${chalk.yellow(
+        `${chalk.green('[globby]')}: mapping ${chalk.yellow(DIR_IMG_PATTERN)} in ${chalk.yellow(
           dirResolved
         )} to ${chalk.yellow(resolvedFiles.length)} files :`
       )
@@ -490,13 +527,20 @@ async function compress({
   let buf: Buffer | undefined
   try {
     if (codec === 'mozjpeg') {
-      buf = await mozjpegCompress(inputFullpath, {
+      buf = await sharpMozjpegCompress(inputFullpath, metadata, {
         progressive: true,
         quality,
       })
-    } else {
+    }
+    if (codec === 'webp') {
       buf = await sharpWebpCompress(inputFullpath, metadata, {
-        quality: quality,
+        quality,
+      })
+    }
+    if (codec === 'mozjpeg-raw') {
+      buf = await mozjpegCompress(inputFullpath, {
+        progressive: true,
+        quality,
       })
     }
   } catch (err) {
@@ -513,6 +557,8 @@ async function compress({
     )
     return
   }
+
+  if (!buf) return
 
   const originalSize = await fse.stat(inputFullpath).then((stat) => stat.size)
   const newSize = buf.length
