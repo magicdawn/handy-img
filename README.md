@@ -106,17 +106,15 @@ $ handy-img compress
 himg c -d ./your-dir-here -y
 ```
 
-```sh
-# example
-himg c -d ./unsplash-壁纸 --dir-suffix mini -y
-```
-
 glob all imgs in the dir you provided, and output to a new directory, which name is original name + dir suffix
 and img will keep same structure.
 
-![image](https://user-images.githubusercontent.com/4067115/180051281-7721464c-dde1-4690-a241-fe525d1e676f.png)
+```sh
+# example
+himg c -d dir -q 85 -y
+```
 
-![image](https://user-images.githubusercontent.com/4067115/180051359-ed180f35-a57d-478e-b122-eb77532f342a.png)
+![image](https://user-images.githubusercontent.com/4067115/227441783-407dab2e-9eb2-4be8-bfaf-635bee4787ae.png)
 
 ### about `-y,--yes`
 
