@@ -15,8 +15,7 @@ import path from 'path'
 import pmap from 'promise.map'
 import { decode, metadata } from '../codec/decode'
 import { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from '../compress'
-
-const fnHumanizeDuration = humanizer({ language: 'zh_CN', fallbacks: ['en'], round: true })
+import { sync as osLocaleSync } from 'os-locale'
 
 // 2023-03-24:
 // sharp 在 2021 内置了 mozjepg codec
@@ -474,7 +473,11 @@ export class CompressCommand extends Command {
 
     if (this.yes) {
       const costMs = performance.now() - start
+
+      const locale = osLocaleSync()
+      const fnHumanizeDuration = humanizer({ language: locale, fallbacks: ['en'], round: true })
       const cost = fnHumanizeDuration(costMs)
+
       console.log('%s %s cost %s', LogSymbols.success, chalk.green('[compress:done]'), cost)
     }
   }
