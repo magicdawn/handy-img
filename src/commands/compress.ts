@@ -6,7 +6,6 @@ import { Command, Option, Usage } from 'clipanion'
 import figures from 'figures'
 import fse from 'fs-extra'
 import globby from 'globby'
-import { humanizer } from 'humanize-duration'
 import LogSymbols from 'log-symbols'
 import { PathFinder } from 'mac-helper'
 import { performance } from 'node:perf_hooks'
@@ -15,7 +14,14 @@ import path from 'path'
 import pmap from 'promise.map'
 import { decode, metadata } from '../codec/decode'
 import { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from '../compress'
+
+// locale: en-US / zh-CN / zh-TW
+// lang: en / zh_CN / zh_TW
+import { humanizer } from 'humanize-duration'
 import { sync as osLocaleSync } from 'os-locale'
+const locale = osLocaleSync()
+const lang = locale.startsWith('zh') ? locale.replace(/-/, '_') : locale.split('-')[0]
+const getDurationDisplay = humanizer({ language: lang, fallbacks: ['en'], round: true })
 
 // 2023-03-24:
 // sharp 在 2021 内置了 mozjepg codec
@@ -473,11 +479,7 @@ export class CompressCommand extends Command {
 
     if (this.yes) {
       const costMs = performance.now() - start
-
-      const locale = osLocaleSync()
-      const fnHumanizeDuration = humanizer({ language: locale, fallbacks: ['en'], round: true })
-      const cost = fnHumanizeDuration(costMs)
-
+      const cost = getDurationDisplay(costMs)
       console.log('%s %s cost %s', LogSymbols.success, chalk.green('[compress:done]'), cost)
     }
   }
