@@ -107,6 +107,10 @@ export class CompressCommand extends Command {
     description: `dir mode output dir: <original-dir>+\`suffix\`, default \`_compressed\``,
   })
 
+  dirIgnore = Option.String('-I,--dir-ignore', '', {
+    description: 'ignore pattern in dir for skip compress, use space to split patterns',
+  })
+
   handleOtherFiles = Option.String('-O,--other,--others,--other-files', '', {
     description: 'copy/move none image files when using dir mode',
   })
@@ -159,6 +163,7 @@ export class CompressCommand extends Command {
       dir,
       output,
       metadata,
+      dirIgnore,
     } = this
     const { codec, quality, concurrency } = this.valitedArgs
     const { dirSuffix } = this.mappedArgs
@@ -288,16 +293,19 @@ export class CompressCommand extends Command {
       const dirResolved = path.resolve(dir)
       const dirtitle = path.basename(dirResolved)
 
-      let resolvedFiles = globby.sync(
-        [
-          DIR_IMG_PATTERN,
-          '!**/*_{mozjpeg,webp}_q[0-9][0-9]_compressed/*', // ignore compressed dir
+      let resolvedFiles = globby.sync([DIR_IMG_PATTERN], {
+        dot: false,
+        caseSensitiveMatch: !ignoreCase,
+        cwd: dirResolved,
+        ignore: [
+          // don't process these files
+          '**/*_{mozjpeg,webp}_q[0-9][0-9]_compressed/*', // compressed dir
+          ...(this.dirIgnore || '')
+            .split(' ')
+            .map((p) => p.trim())
+            .filter(Boolean),
         ],
-        {
-          caseSensitiveMatch: !ignoreCase,
-          cwd: dirResolved,
-        }
-      )
+      })
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
 
       console.log(
