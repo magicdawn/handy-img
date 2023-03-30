@@ -297,9 +297,13 @@ export class CompressCommand extends Command {
         dot: false,
         caseSensitiveMatch: !ignoreCase,
         cwd: dirResolved,
+
+        // don't process these files
         ignore: [
-          // don't process these files
-          '**/*_{mozjpeg,webp}_q[0-9][0-9]_compressed/*', // compressed dir
+          // dir previously created by this command
+          '**/*_{mozjpeg,webp}_q[0-9][0-9]_compressed/*',
+
+          // user provided
           ...(this.dirIgnore || '')
             .split(' ')
             .map((p) => p.trim())
