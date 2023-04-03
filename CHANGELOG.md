@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.6.0 2023-03-24
+
+- feat: reexport compress api
+- chore: add --dir-ignore
+- fix: duration display locale
+- doc: readme modify & update screenshot
+
 ## v0.5.0 2023-03-24
 
 - feat: add `--files '$PF'` support

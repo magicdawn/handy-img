@@ -1,10 +1,8 @@
-// inner libs
-import sharp from 'sharp'
 import mozjpeg from 'node-mozjpeg'
-export { sharp, mozjpeg }
+import sharp from 'sharp'
 
 // decode to metadata or Buffer
-export { SharpInput, metadata, decode } from './codec/decode'
-
+export { SharpInput, decode, metadata } from './codec/decode'
 // high level compress API
-export { mozjpegCompress, sharpWebpCompress } from './compress'
+export { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from './compress'
+export { sharp, mozjpeg }
