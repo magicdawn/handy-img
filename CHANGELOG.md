@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## v0.6.0 2023-03-24
+## v0.6.0 2023-04-03
 
 - feat: reexport compress api
 - chore: add --dir-ignore
