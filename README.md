@@ -20,23 +20,20 @@
 ## Install
 
 ```sh
-pnpm add -g handy-img
+$ pnpm add -g handy-img
 ```
 
 ## or invoke without install
 
-```
+```sh
 # pnpm, recommend
 pnpm dlx handy-img
-
-# or npx
-npx handy-img
-
-# or pnpx
-pnpx handy-img
-
 # or yarn 2
 yarn dlx handy-img
+
+# or npx/pnpx
+npx handy-img
+pnpx handy-img
 ```
 
 ## cli
