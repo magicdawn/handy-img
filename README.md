@@ -4,7 +4,7 @@
 
 > handy img tool and API
 
-[![Build Status](https://img.shields.io/travis/magicdawn/handy-img.svg?style=flat-square)](https://travis-ci.org/magicdawn/handy-img)
+[![Build Status](https://img.shields.io/github/actions/workflow/status/magicdawn/handy-img/ci.yml?style=flat-square&branch=main)](https://github.com/magicdawn/handy-img/actions/workflows/ci.yml)
 [![Coverage Status](https://img.shields.io/codecov/c/github/magicdawn/handy-img.svg?style=flat-square)](https://codecov.io/gh/magicdawn/handy-img)
 [![npm version](https://img.shields.io/npm/v/handy-img.svg?style=flat-square)](https://www.npmjs.com/package/handy-img)
 [![npm downloads](https://img.shields.io/npm/dm/handy-img.svg?style=flat-square)](https://www.npmjs.com/package/handy-img)
