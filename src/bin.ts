@@ -1,13 +1,14 @@
-#!ts-node
+#!/usr/bin/env node
 
-import { Cli, Builtins } from 'clipanion'
+import { Builtins, Cli } from 'clipanion'
+import $esm from 'esm-utils'
 import { PackageJson } from 'type-fest'
-
 // more commands
-import { InfoCommand } from './commands/info'
-import { CompressCommand } from './commands/compress'
+import { CompressCommand } from './commands/compress.js'
+import { InfoCommand } from './commands/info.js'
 
-const { version, name, bin } = require('../package') as PackageJson
+const { require } = $esm(import.meta)
+const { version, name, bin } = require('../package.json') as PackageJson
 
 const [node, app, ...args] = process.argv
 const cli = new Cli({

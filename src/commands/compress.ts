@@ -3,22 +3,23 @@ import { getFilenameTokens, printFilenameTokens, renderFilenameTokens } from '@m
 import bytes from 'bytes'
 import chalk from 'chalk'
 import { Command, Option, Usage } from 'clipanion'
+import fg from 'fast-glob'
 import figures from 'figures'
 import fse from 'fs-extra'
-import globby from 'globby'
 import LogSymbols from 'log-symbols'
 import { PathFinder } from 'mac-helper'
 import { performance } from 'node:perf_hooks'
 import { cpus } from 'os'
 import path from 'path'
 import pmap from 'promise.map'
-import { decode, metadata } from '../codec/decode'
-import { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from '../compress'
+import { decode, metadata } from '../codec/decode.js'
+import { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from '../compress.js'
 
 // locale: en-US / zh-CN / zh-TW
 // lang: en / zh_CN / zh_TW
-import { humanizer } from 'humanize-duration'
-import { sync as osLocaleSync } from 'os-locale'
+import humanizeDuration from 'humanize-duration'
+import { osLocaleSync } from 'os-locale'
+const { humanizer } = humanizeDuration
 const locale = osLocaleSync()
 const lang = locale.startsWith('zh') ? locale.replace(/-/, '_') : locale.split('-')[0]
 const getDurationDisplay = humanizer({ language: lang, fallbacks: ['en'], round: true })
@@ -209,18 +210,18 @@ export class CompressCommand extends Command {
           process.exit(1)
         }
       } else {
-        resolvedFiles = globby.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
+        resolvedFiles = fg.sync(files, { caseSensitiveMatch: !ignoreCase, cwd: globCwd })
       }
 
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
       console.log('')
       console.log(
-        `${chalk.green('[globby]')}: docs ${chalk.blue(
+        `${chalk.green('[glob]')}: docs ${chalk.blue(
           'https://github.com/mrmlnc/fast-glob#pattern-syntax'
         )}`
       )
       console.log(
-        `${chalk.green('[globby]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
+        `${chalk.green('[glob]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
           resolvedFiles.length
         )} files ->`
       )
@@ -293,7 +294,7 @@ export class CompressCommand extends Command {
       const dirResolved = path.resolve(dir)
       const dirtitle = path.basename(dirResolved)
 
-      let resolvedFiles = globby.sync([DIR_IMG_PATTERN], {
+      let resolvedFiles = fg.sync([DIR_IMG_PATTERN], {
         dot: false,
         caseSensitiveMatch: !ignoreCase,
         cwd: dirResolved,
@@ -313,7 +314,7 @@ export class CompressCommand extends Command {
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
 
       console.log(
-        `${chalk.green('[globby]')}: mapping ${chalk.yellow(DIR_IMG_PATTERN)} in ${chalk.yellow(
+        `${chalk.green('[glob]')}: mapping ${chalk.yellow(DIR_IMG_PATTERN)} in ${chalk.yellow(
           dirResolved
         )} to ${chalk.yellow(resolvedFiles.length)} files :`
       )
@@ -383,7 +384,7 @@ export class CompressCommand extends Command {
           return
         }
 
-        let otherFiles = globby.sync(
+        let otherFiles = fg.sync(
           [
             // all files
             './**/*',
@@ -407,7 +408,7 @@ export class CompressCommand extends Command {
         console.log('')
         console.log(`${chalk.green('[other-files]')}: %s`, this.handleOtherFiles)
         console.log(
-          `${chalk.green('[globby]')}: found ${chalk.yellow(
+          `${chalk.green('[glob]')}: found ${chalk.yellow(
             otherFiles.length
           )} none image files in ${chalk.yellow(dirResolved)} :`
         )

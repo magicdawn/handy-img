@@ -4,17 +4,17 @@
     "rootDir": "src",
     "outDir": "lib",
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "moduleResolution": "node",
     "resolveJsonModule": true,
-    "target": "es2019",
-    "module": "CommonJS",
+    "target": "ES2022",
+    "module": "Node16",
+    "esModuleInterop": true,
     "declaration": true,
     "strictNullChecks": true,
     "skipLibCheck": true
   },
   "ts-node": {
     "transpileOnly": true,
-    "swc": true
+    "swc": true,
+    "esm": true
   }
 }

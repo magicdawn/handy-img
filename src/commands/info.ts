@@ -1,6 +1,6 @@
 import { Command, Option, Usage } from 'clipanion'
 import path from 'path'
-import { decode, metadata } from '../'
+import { decode, metadata } from '../index.js'
 
 export class InfoCommand extends Command {
   static paths = [['info'], ['i']]
