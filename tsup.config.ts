@@ -8,7 +8,8 @@ const prod = process.env.NODE_ENV === 'production'
 export default defineConfig((options) => ({
   entry: ['src/bin.ts', 'src/index.ts'],
   target: 'node16',
-  format: ['esm', 'cjs'],
+  // format: ['esm', 'cjs'], import.meta not available in cjs
+  format: 'esm',
   clean: true,
   dts: prod,
   esbuildOptions(options) {

@@ -1,4 +1,4 @@
-import 'should'
+import { describe, expect, it } from 'vitest'
 import { metadata } from '../src/codec/decode'
 import { mozjpegCompress, sharpMozjpegCompress } from '../src/compress'
 
@@ -12,11 +12,11 @@ describe('compress', () => {
     const meta = await metadata(buf)
     const { format, width, height } = meta
 
-    format!.should.equal('jpeg')
+    expect(format).to.equal('jpeg')
 
     // iPhone 7
-    width!.should.equal(750)
-    height!.should.equal(1334)
+    expect(width).to.equal(750)
+    expect(height).to.equal(1334)
   })
 
   it('sharpMozjpegCompress ', async () => {
@@ -26,10 +26,10 @@ describe('compress', () => {
     const meta = await metadata(buf)
     const { format, width, height } = meta
 
-    format!.should.equal('jpeg')
+    expect(format).to.equal('jpeg')
 
     // iPhone 7
-    width!.should.equal(750)
-    height!.should.equal(1334)
+    expect(width).to.equal(750)
+    expect(height).to.equal(1334)
   })
 })

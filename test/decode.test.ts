@@ -1,28 +1,29 @@
-import {metadata, decode} from '../src/codec/decode'
+import { describe, expect, it } from 'vitest'
+import { decode, metadata } from '../src/codec/decode'
 
 describe('decode', () => {
   const input = __dirname + '/fixtures/demo.png'
 
   it('metadata works', async () => {
     const meta = await metadata(input)
-    const {format, width, height} = meta
+    const { format, width, height } = meta
 
-    format.should.equal('png')
+    expect(format).to.equal('png')
 
     // iPhone 7
-    width.should.equal(750)
-    height.should.equal(1334)
+    expect(width).to.equal(750)
+    expect(height).to.equal(1334)
   })
 
   it('decode', async () => {
     const decoded = await decode(input)
-    const {data, width, height} = decoded
+    const { data, width, height } = decoded
 
-    data.should.instanceof(Uint8Array)
-    data.byteLength.should.above(0)
+    expect(data).to.instanceOf(Uint8Array)
+    expect(data.byteLength).to.gt(0)
 
     // iPhone 7
-    width.should.equal(750)
-    height.should.equal(1334)
+    expect(width).to.equal(750)
+    expect(height).to.equal(1334)
   })
 })
