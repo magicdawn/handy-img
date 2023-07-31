@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { decode, metadata } from '../src/codec/decode'
+import { decode, metadata } from '../src/codec/decode.js'
 
 describe('decode', () => {
   const input = __dirname + '/fixtures/demo.png'

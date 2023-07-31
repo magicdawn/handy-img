@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { metadata } from '../src/codec/decode'
-import { mozjpegCompress, sharpMozjpegCompress } from '../src/compress'
+import { metadata } from '../src/codec/decode.js'
+import { mozjpegCompress, sharpMozjpegCompress } from '../src/compress.js'
 
 describe('compress', () => {
   const input = __dirname + '/fixtures/demo.png'
