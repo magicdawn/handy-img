@@ -1,5 +1,9 @@
 # CHANGELOG
 
+## v0.7.0 2023-08-24
+
+- move to esm / tsup / vitest
+
 ## v0.6.0 2023-04-03
 
 - feat: reexport compress api
