@@ -1,8 +1,8 @@
-import nodeMozjpeg, { EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
+import NodeMozjpeg, { type EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
 import sharp from 'sharp'
 import { decode, SharpInput } from './codec/decode.js'
 
-const { encode: mozjpegEncode } = nodeMozjpeg
+const { encode: mozjpegEncode } = NodeMozjpeg
 
 export async function mozjpegCompress(file: SharpInput, options?: Partial<MozjpegEncodeOptions>) {
   if (!file) {
@@ -21,7 +21,7 @@ export async function mozjpegCompress(file: SharpInput, options?: Partial<Mozjpe
 export async function sharpMozjpegCompress(
   file: SharpInput,
   keepMetadata = true,
-  options?: sharp.JpegOptions
+  options?: sharp.JpegOptions,
 ) {
   let img = sharp(file).jpeg({
     mozjpeg: true,
@@ -36,17 +36,36 @@ export async function sharpMozjpegCompress(
   return buf
 }
 
-export async function sharpWebpCompress(
-  file: SharpInput,
-  keepMetadata = true,
-  options?: sharp.WebpOptions
+function sharpTargetFormatFactory<T extends 'webp' | 'avif' | 'jxl'>(
+  targetFormat: 'webp' | 'avif' | 'jxl',
 ) {
-  let img = sharp(file).webp(options)
+  type IOptions = T extends 'webp'
+    ? sharp.WebpOptions
+    : T extends 'avif'
+      ? sharp.AvifOptions
+      : sharp.JxlOptions
 
-  if (keepMetadata) {
-    img = img.withMetadata()
+  return async function sharpCompressToFormat(
+    file: SharpInput,
+    keepMetadata = true,
+    options?: IOptions,
+  ) {
+    let img = sharp(file)[targetFormat](options)
+
+    if (keepMetadata) {
+      img = img.withMetadata()
+    }
+
+    const buf = await img.toBuffer()
+    return buf
   }
-
-  const buf = await img.toBuffer()
-  return buf
 }
+
+// webp
+export const sharpWebpCompress = sharpTargetFormatFactory<'webp'>('webp')
+
+// avif
+export const sharpAvifCompress = sharpTargetFormatFactory<'avif'>('avif')
+
+// jxl: require custom libvips compiled with support for libjxl
+export const sharpJxlCompress = sharpTargetFormatFactory<'jxl'>('jxl')

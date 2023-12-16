@@ -13,7 +13,13 @@ import { cpus } from 'os'
 import path from 'path'
 import pmap from 'promise.map'
 import { decode, metadata } from '../codec/decode.js'
-import { mozjpegCompress, sharpMozjpegCompress, sharpWebpCompress } from '../compress.js'
+import {
+  mozjpegCompress,
+  sharpAvifCompress,
+  sharpJxlCompress,
+  sharpMozjpegCompress,
+  sharpWebpCompress,
+} from '../compress.js'
 
 // locale: en-US / zh-CN / zh-TW
 // lang: en / zh_CN / zh_TW
@@ -27,9 +33,9 @@ const getDurationDisplay = humanizer({ language: lang, fallbacks: ['en'], round:
 // 2023-03-24:
 // sharp 在 2021 内置了 mozjepg codec
 // 测试下来, 同 quality, 比 mozjpeg 更快, size 更小, 还能 keep metadata
-// mozjpeg 改成 mozjpeg-raw
+// 原 mozjpeg 改成 mozjpeg-raw
 // mozjpeg 转成 sharp 内置的 mozjepg
-const AllOWED_CODEC = ['mozjpeg', 'webp', 'mozjpeg-raw'] as const
+const AllOWED_CODEC = ['mozjpeg', 'webp', 'avif', 'jxl', 'mozjpeg-raw'] as const
 type Codec = typeof AllOWED_CODEC extends ReadonlyArray<infer T> ? T : never
 
 const DEFAULT_CONCURRENCY = process.env.UV_THREADPOOL_SIZE
@@ -49,8 +55,10 @@ export class CompressCommand extends Command {
     description: 'compress img',
     details: `
 		codec detail \n
-			- mozjpeg: use sharp jpeg({ mozjepg: true }), aka sharp's built in mozjpeg
+			- mozjpeg: use sharp jpeg({ mozjepg: true }), aka sharp's builtin mozjpeg
 			- webp: use sharp webp
+			- avif: use sharp avif
+			- jxl: use sharp jxl, requires custom libvips compiled with libjxl
 			- mozjepg-raw: use magicdawn/node-mozjepg
     `,
   }
@@ -77,7 +85,7 @@ export class CompressCommand extends Command {
   })
 
   output = Option.String('-o,--output', {
-    description: 'output patterns',
+    description: 'output patterns, can optional use special `append-base` or `separate-dir`',
   })
 
   codec = Option.String('-C,--codec', 'mozjpeg' satisfies Codec, {
@@ -94,6 +102,10 @@ export class CompressCommand extends Command {
 
   concurrency = Option.String('-c,--concurrency', DEFAULT_CONCURRENCY.toString(), {
     description: `parallel limit, current default \`${DEFAULT_CONCURRENCY}\`, influenced by UV_THREADPOOL_SIZE and cpu-core-count`,
+  })
+
+  lossless = Option.Boolean('-L,--lossless', false, {
+    description: 'lossless compression',
   })
 
   /**
@@ -129,10 +141,17 @@ export class CompressCommand extends Command {
   }
 
   get valitedArgs() {
-    let { codec, quality, concurrency } = this
+    let { codec, quality, concurrency, lossless } = this
 
     if (!AllOWED_CODEC.includes(codec as Codec)) {
       throw new Error('unsupported codec, supported: ' + AllOWED_CODEC.join(' or '))
+    }
+
+    let _codec = codec as Codec
+    if (_codec === 'mozjpeg' || _codec === 'mozjpeg-raw') {
+      if (this.lossless) {
+        throw new Error('-L,--lossless can not be used with jpeg')
+      }
     }
 
     let qualityAsNum = Number(quality)
@@ -162,8 +181,8 @@ export class CompressCommand extends Command {
       globCwd = process.cwd(),
       yes,
       dir,
-      output,
       metadata,
+      lossless,
       dirIgnore,
     } = this
     const { codec, quality, concurrency } = this.valitedArgs
@@ -174,15 +193,15 @@ export class CompressCommand extends Command {
       return
     }
 
-    const targetExt = codec === 'webp' ? 'webp' : 'jpg'
+    const targetExt = codec === 'mozjpeg' || codec === 'mozjpeg-raw' ? 'jpg' : codec
 
     const previewingTip = () => {
       console.log('')
       console.log('-'.repeat(80))
       console.log(
         `  current ${chalk.yellow('previewing')} commands. After comfirmed, append ${chalk.green(
-          '-y or --yes'
-        )} flag to execute`
+          '-y or --yes',
+        )} flag to execute`,
       )
       console.log('-'.repeat(80))
       console.log('')
@@ -217,17 +236,27 @@ export class CompressCommand extends Command {
       console.log('')
       console.log(
         `${chalk.green('[glob]')}: docs ${chalk.blue(
-          'https://github.com/mrmlnc/fast-glob#pattern-syntax'
-        )}`
+          'https://github.com/mrmlnc/fast-glob#pattern-syntax',
+        )}`,
       )
       console.log(
         `${chalk.green('[glob]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
-          resolvedFiles.length
-        )} files ->`
+          resolvedFiles.length,
+        )} files ->`,
       )
       resolvedFiles.forEach((f) => {
         console.log(`  ${chalk.cyan(f)}`)
       })
+
+      // special output
+      let { output } = this
+      const q = lossless ? 'lossless' : `q${quality}`
+      if (output === 'append-base') {
+        output = `:dir/:file.${codec}-${q}.:ext`
+      }
+      if (output === 'separate-dir') {
+        output = `:dir-${codec}-${q}/:name.:ext`
+      }
 
       let outputs: string[] = []
       for (let item of resolvedFiles) {
@@ -251,7 +280,7 @@ export class CompressCommand extends Command {
               '%s: %s -> %s',
               chalk.green('[compress:preview]'),
               chalk.green(item),
-              chalk.yellow(curOutput)
+              chalk.yellow(curOutput),
             )
           }
         }
@@ -263,6 +292,11 @@ export class CompressCommand extends Command {
       }
 
       // start work
+      if (!this.output) {
+        console.error('no -o,--output provided')
+        process.exit(1)
+        return
+      }
       if (this.yes && this.output) {
         await pmap(
           resolvedFiles,
@@ -283,9 +317,10 @@ export class CompressCommand extends Command {
               codec,
               metadata,
               quality,
+              lossless,
             })
           },
-          concurrency
+          concurrency,
         )
       }
     }
@@ -315,8 +350,8 @@ export class CompressCommand extends Command {
 
       console.log(
         `${chalk.green('[glob]')}: mapping ${chalk.yellow(DIR_IMG_PATTERN)} in ${chalk.yellow(
-          dirResolved
-        )} to ${chalk.yellow(resolvedFiles.length)} files :`
+          dirResolved,
+        )} to ${chalk.yellow(resolvedFiles.length)} files :`,
       )
       resolvedFiles.forEach((f) => {
         console.log(`  ${chalk.cyan(f)}`)
@@ -333,7 +368,7 @@ export class CompressCommand extends Command {
         // item -> 切换 ext
         const outputRelativeFilename = path.join(
           path.dirname(item),
-          `${path.basename(item, path.extname(item))}.${targetExt}`
+          `${path.basename(item, path.extname(item))}.${targetExt}`,
         )
         outputs.push(`${outputDirResolved}/${outputRelativeFilename}`)
         outputsRelative.push(outputRelativeFilename)
@@ -343,7 +378,7 @@ export class CompressCommand extends Command {
             '%s: %s -> %s',
             chalk.green('[compress:preview]'),
             chalk.green(dirtitle + '/' + item),
-            chalk.yellow(outputDirTitle + '/' + outputRelativeFilename)
+            chalk.yellow(outputDirTitle + '/' + outputRelativeFilename),
           )
         }
       }
@@ -369,9 +404,10 @@ export class CompressCommand extends Command {
               codec,
               metadata,
               quality,
+              lossless,
             })
           },
-          concurrency
+          concurrency,
         )
       }
 
@@ -397,7 +433,7 @@ export class CompressCommand extends Command {
             caseSensitiveMatch: !ignoreCase,
             cwd: dirResolved,
             dot: true, // 匹配 .file
-          }
+          },
         )
         // 去除已经处理的 img 文件
         otherFiles = otherFiles.filter((item) => {
@@ -409,8 +445,8 @@ export class CompressCommand extends Command {
         console.log(`${chalk.green('[other-files]')}: %s`, this.handleOtherFiles)
         console.log(
           `${chalk.green('[glob]')}: found ${chalk.yellow(
-            otherFiles.length
-          )} none image files in ${chalk.yellow(dirResolved)} :`
+            otherFiles.length,
+          )} none image files in ${chalk.yellow(dirResolved)} :`,
         )
         otherFiles.forEach((f) => {
           console.log(`  ${chalk.cyan(f)}`)
@@ -424,7 +460,7 @@ export class CompressCommand extends Command {
               chalk.green('[compress:preview]'),
               this.handleOtherFiles,
               chalk.green(dirtitle + '/' + file),
-              chalk.yellow(outputDirTitle + '/' + file)
+              chalk.yellow(outputDirTitle + '/' + file),
             )
           })
         }
@@ -443,7 +479,7 @@ export class CompressCommand extends Command {
                 chalk.green(`[compress:${this.handleOtherFiles}-other-files]`),
                 this.handleOtherFiles,
                 chalk.green(dirtitle + '/' + file),
-                chalk.yellow(outputDirTitle + '/' + file)
+                chalk.yellow(outputDirTitle + '/' + file),
               )
 
               if (this.handleOtherFiles === 'move') {
@@ -452,7 +488,7 @@ export class CompressCommand extends Command {
                 await fse.copyFile(src, dest)
               }
             },
-            5
+            5,
           )
         }
       }
@@ -507,6 +543,7 @@ async function compress({
   codec,
   metadata,
   quality,
+  lossless,
   force = false,
 }: {
   inputDisplay: string
@@ -517,6 +554,7 @@ async function compress({
   codec: Codec
   metadata: boolean
   quality: number
+  lossless: boolean
   force?: boolean
 }) {
   // skip
@@ -537,7 +575,7 @@ async function compress({
       chalk.green('[compress:skip]') + ' ',
       progress,
       inputDisplay,
-      outputDisplay
+      outputDisplay,
     )
     return
   }
@@ -550,11 +588,12 @@ async function compress({
         quality,
       })
     }
-    if (codec === 'webp') {
-      buf = await sharpWebpCompress(inputFullpath, metadata, {
-        quality,
-      })
+
+    if (codec === 'webp' || codec === 'avif' || codec === 'jxl') {
+      const fn = { webp: sharpWebpCompress, avif: sharpAvifCompress, jxl: sharpJxlCompress }[codec]
+      buf = await fn(inputFullpath, metadata, { lossless, quality: lossless ? undefined : quality })
     }
+
     if (codec === 'mozjpeg-raw') {
       buf = await mozjpegCompress(inputFullpath, {
         progressive: true,
@@ -571,7 +610,7 @@ async function compress({
       outputDisplay,
       // line 2
       err,
-      '\n'
+      '\n',
     )
     return
   }
@@ -605,7 +644,7 @@ async function compress({
       outputDisplay,
       bytes(originalSize),
       bytes(newSize),
-      changedRateDisplay
+      changedRateDisplay,
     )
   }
 
@@ -620,7 +659,7 @@ async function compress({
       outputDisplay,
       bytes(originalSize),
       bytes(newSize),
-      changedRateDisplay
+      changedRateDisplay,
     )
   }
 }

@@ -151,6 +151,13 @@ example pattern `himg c -f './*.jpg' -t -o ':dir/compressed/:name.:ext'`
 
 </details>
 
+## Which codec & quality should I choose ?
+
+See
+
+- https://tsev.dev/posts/2023-11-10-should-avif-be-the-dominant-image-format/
+- AND https://github.com/magicdawn/magicdawn/issues/170#issuecomment-1858817900
+
 ## Changelog
 
 [CHANGELOG.md](CHANGELOG.md)
