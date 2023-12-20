@@ -1,4 +1,4 @@
-import * as bmp from '@vingle/bmp-js'
+import { decode as bmpDecode } from '@vingle/bmp-js'
 import { readFile } from 'fs/promises'
 import NodeMozjpeg, { type EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
 import path from 'path'
@@ -33,7 +33,7 @@ function isBitmap(buf: Buffer): boolean {
 }
 
 const handleBmp = (buf: Buffer) => {
-  const bitmap = bmp.decode(buf, true)
+  const bitmap = bmpDecode(buf, true)
   return sharp(bitmap.data, {
     raw: {
       width: bitmap.width,
