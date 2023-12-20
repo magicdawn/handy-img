@@ -1,3 +1,4 @@
+import { readFile } from 'fs/promises'
 import path from 'path'
 import { describe, expect, it } from 'vitest'
 import { metadata } from '../src/codec/decode.js'
@@ -33,10 +34,19 @@ describe('compress', () => {
     expect(width).to.equal(750)
     expect(height).to.equal(1334)
   })
+})
 
-  it('.bmp as input should be ok', async () => {
-    const input = path.join(__dirname, './fixtures/dots.bmp')
+describe('bmp support', () => {
+  const input = path.join(__dirname, './fixtures/dots.bmp')
+
+  it('.bmp file as input', async () => {
     const buf = await sharpMozjpegCompress(input)
+    expect(buf).toBeInstanceOf(Buffer)
+  })
+
+  it('Buffer contains bmp data', async () => {
+    const inputBuf = await readFile(input)
+    const buf = await sharpMozjpegCompress(inputBuf)
     expect(buf).toBeInstanceOf(Buffer)
   })
 })
