@@ -1,5 +1,12 @@
 # CHANGELOG
 
+## v0.8.0 2023-12-21
+
+- 9d9f406 chore: use named exports of bmpjs
+- d01db2c feat: add bmp input support
+- 8d9f32a ncu deps
+- 378b5bc feat: add avif & jxl support
+
 ## v0.7.0 2023-08-24
 
 - move to esm / tsup / vitest
