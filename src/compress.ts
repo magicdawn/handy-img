@@ -1,5 +1,8 @@
+import * as bmp from '@vingle/bmp-js'
+import { readFile } from 'fs/promises'
 import NodeMozjpeg, { type EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
-import sharp from 'sharp'
+import path from 'path'
+import sharp, { Sharp } from 'sharp'
 import { decode, SharpInput } from './codec/decode.js'
 
 const { encode: mozjpegEncode } = NodeMozjpeg
@@ -18,12 +21,53 @@ export async function mozjpegCompress(file: SharpInput, options?: Partial<Mozjpe
   return bufEncoded
 }
 
+/**
+ * bmp support
+ * @see https://github.com/lovell/sharp/issues/806#issuecomment-419661745
+ */
+
+const BUF_BMP = Buffer.from([0x42, 0x4d]) // "BM" file signature
+
+function isBitmap(buf: Buffer): boolean {
+  return Buffer.compare(BUF_BMP, buf.slice(0, 2)) === 0
+}
+
+const handleBmp = (buf: Buffer) => {
+  const bitmap = bmp.decode(buf, true)
+  return sharp(bitmap.data, {
+    raw: {
+      width: bitmap.width,
+      height: bitmap.height,
+      channels: 4,
+    },
+  })
+}
+
+async function getSharpInstance(input: SharpInput): Promise<Sharp> {
+  // bmp
+  if (typeof input === 'string') {
+    if (path.extname(input).toLowerCase() === '.bmp') {
+      const buf = await readFile(input)
+      if (isBitmap(buf)) {
+        return handleBmp(buf)
+      }
+    }
+  }
+  if (Buffer.isBuffer(input)) {
+    if (isBitmap(input)) {
+      return handleBmp(input)
+    }
+  }
+
+  return sharp(input)
+}
+
 export async function sharpMozjpegCompress(
   file: SharpInput,
   keepMetadata = true,
   options?: sharp.JpegOptions,
 ) {
-  let img = sharp(file).jpeg({
+  let img = (await getSharpInstance(file)).jpeg({
     mozjpeg: true,
     ...options,
   })
@@ -50,7 +94,7 @@ function sharpTargetFormatFactory<T extends 'webp' | 'avif' | 'jxl'>(
     keepMetadata = true,
     options?: IOptions,
   ) {
-    let img = sharp(file)[targetFormat](options)
+    let img = (await getSharpInstance(file))[targetFormat](options)
 
     if (keepMetadata) {
       img = img.withMetadata()

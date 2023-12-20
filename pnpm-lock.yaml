@@ -11,6 +11,9 @@ dependencies:
   '@magicdawn/x-args':
     specifier: ^1.0.0
     version: 1.0.0(typanion@3.14.0)
+  '@vingle/bmp-js':
+    specifier: ^0.2.5
+    version: 0.2.5
   bytes:
     specifier: ^3.1.2
     version: 3.1.2
@@ -1270,9 +1273,19 @@ packages:
       undici-types: 5.26.5
     dev: true
 
+  /@types/node@8.10.66:
+    resolution: {integrity: sha512-tktOkFUA4kXx2hhhrB8bIFb5TbwzS4uOhKEmwiD+NoiL0qtP2OQ9mFldbgD4dV1djrlBYP6eBuQZiWjuHUpqFw==}
+    dev: false
+
   /@ungap/structured-clone@1.2.0:
     resolution: {integrity: sha512-zuVdFrMJiuCDQUMCzQaD6KL28MjnqqN8XnAqiEq9PNm/hCPTSGfrXCOfwj1ow4LFb/tNymJPwsNbVePc1xFqrQ==}
     dev: true
+
+  /@vingle/bmp-js@0.2.5:
+    resolution: {integrity: sha512-tiY69wMrXgIVcdpkjQybXTyQw+P2rKzUfA6b+biM6BD1utr5QeeEj9fzs0fFHVf+3siTsYwzI6zltV9+i6ehEA==}
+    dependencies:
+      '@types/node': 8.10.66
+    dev: false
 
   /@vitest/coverage-v8@1.1.0(vitest@1.1.0):
     resolution: {integrity: sha512-kHQRk70vTdXAyQY2C0vKOHPyQD/R6IUzcGdO4vCuyr4alE5Yg1+Sk2jSdjlIrTTXdcNEs+ReWVM09mmSFJpzyQ==}
