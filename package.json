@@ -6,8 +6,8 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "bin": {
-    "handy-img": "./dist/bin.js",
-    "himg": "./dist/bin.js"
+    "handy-img": "dist/bin.js",
+    "himg": "dist/bin.js"
   },
   "files": [
     "dist",
