@@ -1,3 +1,4 @@
+import path from 'path'
 import { describe, expect, it } from 'vitest'
 import { metadata } from '../src/codec/decode.js'
 import { mozjpegCompress, sharpMozjpegCompress } from '../src/compress.js'
@@ -31,5 +32,11 @@ describe('compress', () => {
     // iPhone 7
     expect(width).to.equal(750)
     expect(height).to.equal(1334)
+  })
+
+  it('.bmp as input should be ok', async () => {
+    const input = path.join(__dirname, './fixtures/dots.bmp')
+    const buf = await sharpMozjpegCompress(input)
+    expect(buf).toBeInstanceOf(Buffer)
   })
 })
