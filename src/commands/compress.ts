@@ -112,12 +112,17 @@ export class CompressCommand extends Command {
    * dir mode
    */
 
-  dir = Option.String('-d,--dir', {
-    description: 'dir mode: compress whole dir, and output to dir_compressed',
+  dir = Option.String('-d,--dir,--input-dir', {
+    description: 'dir mode: the input directory',
   })
 
-  dirSuffix = Option.String('--dir-suffix', '', {
-    description: `dir mode output dir: <original-dir>+\`suffix\`, default \`_compressed\``,
+  outputDirSuffix = Option.String('--output-dir-suffix,--ODS', '', {
+    description: `dir mode: the output dir: <input-dir>+\`suffix\`, default \`_compressed\``,
+  })
+
+  outputParentDir = Option.String('--output-parent-dir,--OPD', '', {
+    description:
+      'dir mode: the parent dir of output-dir, default same as input-dir `dirname(input-dir)`',
   })
 
   dirIgnore = Option.String('-I,--dir-ignore', '', {
@@ -168,9 +173,9 @@ export class CompressCommand extends Command {
 
   get mappedArgs() {
     const { codec, quality } = this.valitedArgs
-    const dirSuffix = this.dirSuffix || `_${codec}_q${quality}_compressed`
+    const outputDirSuffix = this.outputDirSuffix || `_${codec}_q${quality}_compressed`
 
-    return { dirSuffix }
+    return { outputDirSuffix }
   }
 
   async run() {
@@ -186,7 +191,7 @@ export class CompressCommand extends Command {
       dirIgnore,
     } = this
     const { codec, quality, concurrency } = this.valitedArgs
-    const { dirSuffix } = this.mappedArgs
+    const { outputDirSuffix } = this.mappedArgs
 
     if (!this.files && !this.dir) {
       console.error('use -f,--files or -d,--dir to specify input imgs')
@@ -325,14 +330,14 @@ export class CompressCommand extends Command {
       }
     }
 
-    const processDir = async (dir: string) => {
-      const dirResolved = path.resolve(dir)
-      const dirtitle = path.basename(dirResolved)
+    const processDir = async (inputDir: string) => {
+      inputDir = path.resolve(inputDir)
+      const inputDirTitle = path.basename(inputDir)
 
       let resolvedFiles = fg.sync([DIR_IMG_PATTERN], {
         dot: false,
         caseSensitiveMatch: !ignoreCase,
-        cwd: dirResolved,
+        cwd: inputDir,
 
         // don't process these files
         ignore: [
@@ -350,7 +355,7 @@ export class CompressCommand extends Command {
 
       console.log(
         `${chalk.green('[glob]')}: mapping ${chalk.yellow(DIR_IMG_PATTERN)} in ${chalk.yellow(
-          dirResolved,
+          inputDir,
         )} to ${chalk.yellow(resolvedFiles.length)} files :`,
       )
       resolvedFiles.forEach((f) => {
@@ -358,8 +363,9 @@ export class CompressCommand extends Command {
       })
 
       // append _compressed
-      const outputDirResolved = dirResolved + dirSuffix
-      const outputDirTitle = dirtitle + dirSuffix
+      const outputParentDir = path.resolve(this.outputParentDir || path.dirname(inputDir))
+      const outputDirTitle = inputDirTitle + outputDirSuffix
+      const outputDirResolved = path.join(outputParentDir, outputDirTitle)
 
       const outputs: string[] = []
       const outputsRelative: string[] = []
@@ -377,7 +383,7 @@ export class CompressCommand extends Command {
           console.log(
             '%s: %s -> %s',
             chalk.green('[compress:preview]'),
-            chalk.green(dirtitle + '/' + item),
+            chalk.green(inputDirTitle + '/' + item),
             chalk.yellow(outputDirTitle + '/' + outputRelativeFilename),
           )
         }
@@ -388,8 +394,8 @@ export class CompressCommand extends Command {
         await pmap(
           resolvedFiles,
           async (item, index) => {
-            const inputDisplay = dirtitle + '/' + item
-            const inputFullpath = path.join(dirResolved, item)
+            const inputDisplay = inputDirTitle + '/' + item
+            const inputFullpath = path.join(inputDir, item)
             const outputDisplay = outputDirTitle + '/' + outputsRelative[index]
             const outputFullpath = outputs[index]
             const progress = `${(index + 1)
@@ -431,7 +437,7 @@ export class CompressCommand extends Command {
           ],
           {
             caseSensitiveMatch: !ignoreCase,
-            cwd: dirResolved,
+            cwd: inputDir,
             dot: true, // 匹配 .file
           },
         )
@@ -446,7 +452,7 @@ export class CompressCommand extends Command {
         console.log(
           `${chalk.green('[glob]')}: found ${chalk.yellow(
             otherFiles.length,
-          )} none image files in ${chalk.yellow(dirResolved)} :`,
+          )} none image files in ${chalk.yellow(inputDir)} :`,
         )
         otherFiles.forEach((f) => {
           console.log(`  ${chalk.cyan(f)}`)
@@ -459,7 +465,7 @@ export class CompressCommand extends Command {
               '%s: %s %s -> %s',
               chalk.green('[compress:preview]'),
               this.handleOtherFiles,
-              chalk.green(dirtitle + '/' + file),
+              chalk.green(inputDirTitle + '/' + file),
               chalk.yellow(outputDirTitle + '/' + file),
             )
           })
@@ -469,7 +475,7 @@ export class CompressCommand extends Command {
           await pmap(
             otherFiles,
             async (file) => {
-              const src = path.join(dirResolved, file)
+              const src = path.join(inputDir, file)
               const dest = path.join(outputDirResolved, file)
 
               await fse.ensureDir(path.dirname(dest))
@@ -478,7 +484,7 @@ export class CompressCommand extends Command {
                 '%s: %s %s -> %s',
                 chalk.green(`[compress:${this.handleOtherFiles}-other-files]`),
                 this.handleOtherFiles,
-                chalk.green(dirtitle + '/' + file),
+                chalk.green(inputDirTitle + '/' + file),
                 chalk.yellow(outputDirTitle + '/' + file),
               )
 
@@ -503,9 +509,13 @@ export class CompressCommand extends Command {
     const start = performance.now()
     const inputMode = this.files ? 'files' : 'dir'
 
+    // files
     if (inputMode === 'files') {
       await processFiles(files!)
-    } else if (inputMode === 'dir') {
+    }
+
+    // dir
+    else if (inputMode === 'dir') {
       if (dir === '$PF') {
         const pfSelectedDirs = await PathFinder.allSelected()
         if (!pfSelectedDirs.length) {
@@ -612,6 +622,9 @@ async function compress({
       err,
       '\n',
     )
+
+    // TODO: should copy content in dir mode when met error
+
     return
   }
 
