@@ -73,7 +73,7 @@ export async function sharpMozjpegCompress(
   })
 
   if (keepMetadata) {
-    img = img.withMetadata()
+    img = img.keepMetadata()
   }
 
   const buf = await img.toBuffer()
@@ -97,7 +97,7 @@ function sharpTargetFormatFactory<T extends 'webp' | 'avif' | 'jxl'>(
     let img = (await getSharpInstance(file))[targetFormat](options)
 
     if (keepMetadata) {
-      img = img.withMetadata()
+      img = img.keepMetadata()
     }
 
     const buf = await img.toBuffer()

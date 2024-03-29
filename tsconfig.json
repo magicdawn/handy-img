@@ -10,6 +10,7 @@
     "esModuleInterop": true,
     "declaration": true,
     "strictNullChecks": true,
+    "noImplicitThis": true,
     "skipLibCheck": true
   },
   "ts-node": {

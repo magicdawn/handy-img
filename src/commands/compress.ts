@@ -38,6 +38,11 @@ const getDurationDisplay = humanizer({ language: lang, fallbacks: ['en'], round:
 const AllOWED_CODEC = ['mozjpeg', 'webp', 'avif', 'jxl', 'mozjpeg-raw'] as const
 type Codec = typeof AllOWED_CODEC extends ReadonlyArray<infer T> ? T : never
 
+enum FileModeOutputType {
+  AppendBase = 'append-base',
+  NewDir = 'new-dir',
+}
+
 const DEFAULT_CONCURRENCY = process.env.UV_THREADPOOL_SIZE
   ? Number(process.env.UV_THREADPOOL_SIZE)
   : Math.round(cpus().length * 1.5) // 受限于 UV_THREADPOOL_SIZE, 再大到 libuv 那里都得排队
@@ -85,11 +90,11 @@ export class CompressCommand extends Command {
   })
 
   output = Option.String('-o,--output', {
-    description: 'output patterns, can optional use special `append-base` or `separate-dir`',
+    description: `output patterns; optional use special value \`${FileModeOutputType.AppendBase}\` or \`${FileModeOutputType.NewDir}\``,
   })
 
   codec = Option.String('-C,--codec', 'mozjpeg' satisfies Codec, {
-    description: `Allowed codec: ${AllOWED_CODEC.map((c) => `\`${c}\``).join(' or ')}`,
+    description: `Allowed: ${AllOWED_CODEC.map((c) => `\`${c}\``).join(' or ')}`,
   })
 
   metadata = Option.Boolean('--metadata', true, {
@@ -256,10 +261,9 @@ export class CompressCommand extends Command {
       // special output
       let { output } = this
       const q = lossless ? 'lossless' : `q${quality}`
-      if (output === 'append-base') {
+      if (output === FileModeOutputType.AppendBase) {
         output = `:dir/:file.${codec}-${q}.:ext`
-      }
-      if (output === 'separate-dir') {
+      } else if (output === FileModeOutputType.NewDir) {
         output = `:dir-${codec}-${q}/:name.:ext`
       }
 
