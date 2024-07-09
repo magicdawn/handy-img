@@ -12,8 +12,8 @@
     }
   },
   "bin": {
-    "handy-img": "dist/bin.js",
-    "himg": "dist/bin.js"
+    "handy-img": "./dist/bin.mjs",
+    "himg": "./dist/bin.mjs"
   },
   "files": [
     "dist",
