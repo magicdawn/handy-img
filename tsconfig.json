@@ -2,20 +2,12 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "rootDir": "src",
-    "outDir": "lib",
     "allowSyntheticDefaultImports": true,
-    "resolveJsonModule": true,
-    "target": "ES2022",
-    "module": "Node16",
     "esModuleInterop": true,
-    "declaration": true,
-    "strictNullChecks": true,
-    "noImplicitThis": true,
-    "skipLibCheck": true
-  },
-  "ts-node": {
-    "transpileOnly": true,
-    "swc": true,
-    "esm": true
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "skipLibCheck": true,
+    "noEmit": true,
+    "strict": true
   }
 }

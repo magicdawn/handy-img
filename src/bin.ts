@@ -1,13 +1,12 @@
 #!/usr/bin/env node
 
 import { Builtins, Cli } from 'clipanion'
-import $esm from 'esm-utils'
-import { PackageJson } from 'type-fest'
-// more commands
+import { createRequire } from 'module'
+import { type PackageJson } from 'type-fest'
 import { CompressCommand } from './commands/compress.js'
 import { InfoCommand } from './commands/info.js'
 
-const { require } = $esm(import.meta)
+const require = createRequire(import.meta.url)
 const { version, name, bin } = require('../package.json') as PackageJson
 
 const [node, app, ...args] = process.argv

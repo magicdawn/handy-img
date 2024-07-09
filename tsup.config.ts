@@ -1,20 +1,28 @@
-import $esm from 'esm-utils'
 import path from 'path'
-import { defineConfig } from 'tsup'
+import { defineConfig, type Options } from 'tsup'
 
-const { __dirname } = $esm(import.meta)
-const prod = process.env.NODE_ENV === 'production'
-
-export default defineConfig((options) => ({
-  entry: ['src/bin.ts', 'src/index.ts'],
+const shared: Options = {
   target: 'node16',
-  // format: ['esm', 'cjs'], // import.meta not available in cjs
-  format: 'esm',
   clean: true,
-  dts: prod,
+  shims: true,
+  dts: true,
   esbuildOptions(options) {
     options.charset = 'utf8'
     options.external ||= []
     options.external.push(path.join(__dirname, 'package.json'))
   },
-}))
+}
+
+export default defineConfig([
+  {
+    ...shared,
+    entry: ['src/index.ts'],
+    format: ['cjs', 'esm'],
+  },
+  {
+    ...shared,
+    entry: ['src/bin.ts'],
+    format: 'esm',
+    dts: false,
+  },
+])
