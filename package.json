@@ -20,7 +20,7 @@
     "CHANGELOG.md"
   ],
   "scripts": {
-    "prepare": "husky install",
+    "prepare": "husky",
     "dev": "tsup --watch",
     "build": "tsup",
     "prepublishOnly": "pnpm build",
@@ -59,35 +59,35 @@
     "figures": "^6.1.0",
     "fs-extra": "^11.2.0",
     "humanize-duration": "^3.32.1",
-    "log-symbols": "^6.0.0",
+    "log-symbols": "^7.0.0",
     "mac-helper": "^0.1.5",
     "node-mozjpeg": "^1.0.1",
     "os-locale": "^6.0.2",
     "promise.map": "^0.5.0",
-    "sharp": "^0.33.4",
+    "sharp": "^0.33.5",
     "typanion": "^3.14.0"
   },
   "devDependencies": {
     "@magicdawn/eslint-config": "^0.1.0",
     "@magicdawn/prettier-config": "^0.0.4",
-    "@swc/core": "^1.6.13",
-    "@swc/helpers": "^0.5.11",
+    "@swc/core": "^1.7.18",
+    "@swc/helpers": "^0.5.12",
     "@types/bytes": "^3.1.4",
-    "@types/eslint": "^8.56.10",
+    "@types/eslint": "^9.6.1",
     "@types/fs-extra": "^11.0.4",
     "@types/humanize-duration": "^3.27.4",
-    "@types/node": "^20.14.10",
-    "@vitest/coverage-v8": "^2.0.1",
-    "@vitest/ui": "^2.0.1",
-    "eslint": "9.6.0",
-    "husky": "^9.0.11",
-    "lint-staged": "^15.2.7",
-    "prettier": "^3.3.2",
+    "@types/node": "^22.5.0",
+    "@vitest/coverage-v8": "^2.0.5",
+    "@vitest/ui": "^2.0.5",
+    "eslint": "9.9.1",
+    "husky": "^9.1.5",
+    "lint-staged": "^15.2.9",
+    "prettier": "^3.3.3",
     "ts-node": "^10.9.2",
-    "tsup": "^8.1.0",
-    "type-fest": "^4.21.0",
-    "typescript": "^5.5.3",
-    "vitest": "^2.0.1"
+    "tsup": "^8.2.4",
+    "type-fest": "^4.25.0",
+    "typescript": "^5.5.4",
+    "vitest": "^2.0.5"
   },
   "lint-staged": {
     "*.{ts,tsx,json,yml,md}": [
@@ -97,5 +97,5 @@
   "publishConfig": {
     "registry": "https://registry.npmjs.org/"
   },
-  "packageManager": "pnpm@9.5.0+sha512.140036830124618d624a2187b50d04289d5a087f326c9edfc0ccd733d76c4f52c3a313d4fc148794a2a9d81553016004e6742e8cf850670268a7387fc220c903"
+  "packageManager": "pnpm@9.9.0"
 }
