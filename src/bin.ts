@@ -3,8 +3,9 @@
 import { Builtins, Cli } from 'clipanion'
 import { createRequire } from 'module'
 import { type PackageJson } from 'type-fest'
-import { CompressCommand } from './commands/compress.js'
-import { InfoCommand } from './commands/info.js'
+import { CompressCommand } from './commands/compress'
+import { InfoCommand } from './commands/info'
+import { RotateCommand } from './commands/rotate'
 
 const require = createRequire(import.meta.url)
 const { version, name, bin } = require('../package.json') as PackageJson
@@ -23,6 +24,7 @@ cli.register(Builtins.DefinitionsCommand)
 // custom command
 cli.register(InfoCommand)
 cli.register(CompressCommand)
+cli.register(RotateCommand)
 
 // run
 cli.runExit(args, Cli.defaultContext)

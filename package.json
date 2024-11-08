@@ -61,11 +61,14 @@
     "humanize-duration": "^3.32.1",
     "log-symbols": "^7.0.0",
     "mac-helper": "^0.1.5",
+    "micromatch": "^4.0.8",
     "node-mozjpeg": "^1.0.1",
     "os-locale": "^6.0.2",
+    "path-type": "^6.0.0",
     "promise.map": "^0.5.0",
     "sharp": "^0.33.5",
-    "typanion": "^3.14.0"
+    "typanion": "^3.14.0",
+    "zod": "^3.23.8"
   },
   "devDependencies": {
     "@magicdawn/eslint-config": "^0.1.0",
@@ -76,6 +79,7 @@
     "@types/eslint": "^9.6.1",
     "@types/fs-extra": "^11.0.4",
     "@types/humanize-duration": "^3.27.4",
+    "@types/micromatch": "^4.0.9",
     "@types/node": "^22.9.0",
     "@vitest/coverage-v8": "^2.1.4",
     "@vitest/ui": "^2.1.4",
