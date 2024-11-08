@@ -42,7 +42,7 @@ export class RotateCommand extends Command {
     }
 
     const pattern = './**/*.{jpg,jpeg,png,webp,bmp,webp}'
-    const isImg = (p: string) => micromatch([p], pattern).length > 0
+    const isImg = (p: string) => micromatch([p], pattern, { nocase: true }).length > 0
 
     const inputFiles: string[] = []
     for (const item of input) {
@@ -51,7 +51,14 @@ export class RotateCommand extends Command {
           inputFiles.push(item)
         }
       } else {
-        inputFiles.push(...(await fg(pattern, { cwd: item, absolute: true, onlyFiles: true })))
+        inputFiles.push(
+          ...(await fg(pattern, {
+            cwd: item,
+            absolute: true,
+            onlyFiles: true,
+            caseSensitiveMatch: false,
+          })),
+        )
       }
     }
 
