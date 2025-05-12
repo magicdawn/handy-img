@@ -2,7 +2,8 @@ import mozjpeg from 'node-mozjpeg'
 import sharp from 'sharp'
 
 // decode to metadata or Buffer
-export { SharpInput, decode, metadata } from './codec/decode.js'
+export { decode, metadata, SharpInput } from './codec/decode.js'
+export * from './util.js'
 
 // high level compress API
 export {
