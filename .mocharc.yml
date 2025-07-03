@@ -1,9 +1,0 @@
-require:
-  - ts-node/register
-  - should
-
-spec: 'test/**/*.ts'
-
-reporter: spec
-timeout: 5000
-recursive: true
