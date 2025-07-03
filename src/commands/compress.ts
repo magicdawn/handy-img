@@ -1,16 +1,18 @@
+import { cpus } from 'node:os'
+import path from 'node:path'
+import { performance } from 'node:perf_hooks'
 import { finderSort } from '@magicdawn/finder-sort'
 import { getFilenameTokens, printFilenameTokens, renderFilenameTokens } from '@magicdawn/x-args'
 import bytes from 'bytes'
 import chalk from 'chalk'
-import { Command, Option, Usage } from 'clipanion'
+import { Command, Option, type Usage } from 'clipanion'
 import fg from 'fast-glob'
 import figures from 'figures'
 import fse from 'fs-extra'
+import humanizeDuration from 'humanize-duration'
 import LogSymbols from 'log-symbols'
 import { PathFinder } from 'mac-helper'
-import { performance } from 'node:perf_hooks'
-import { cpus } from 'os'
-import path from 'path'
+import { osLocaleSync } from 'os-locale'
 import pmap from 'promise.map'
 import { decode, metadata } from '../codec/decode.js'
 import {
@@ -23,8 +25,6 @@ import {
 
 // locale: en-US / zh-CN / zh-TW
 // lang: en / zh_CN / zh_TW
-import humanizeDuration from 'humanize-duration'
-import { osLocaleSync } from 'os-locale'
 const { humanizer } = humanizeDuration
 const locale = osLocaleSync()
 const lang = locale.startsWith('zh') ? locale.replace(/-/, '_') : locale.split('-')[0]
@@ -50,13 +50,13 @@ const DEFAULT_CONCURRENCY = process.env.UV_THREADPOOL_SIZE
 // general purpose
 const DEFAULT_QUALITY = 80
 
-const DIR_IMG_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'bmp']
+const DIR_IMG_EXTS = ['jpg', 'jpeg', 'png', 'webp', 'bmp', 'heic', 'heif', 'avif']
 const DIR_IMG_PATTERN = `./**/*.{${DIR_IMG_EXTS.join(',')}}`
 
 export class CompressCommand extends Command {
-  static paths = [['compress'], ['c']]
+  static override paths = [['compress'], ['c']]
 
-  static usage: Usage = {
+  static override usage: Usage = {
     description: 'compress img',
     details: `
 		codec detail \n
@@ -126,8 +126,7 @@ export class CompressCommand extends Command {
   })
 
   outputParentDir = Option.String('--output-parent-dir,--OPD', '', {
-    description:
-      'dir mode: the parent dir of output-dir, default same as input-dir `dirname(input-dir)`',
+    description: 'dir mode: the parent dir of output-dir, default same as input-dir `dirname(input-dir)`',
   })
 
   dirIgnore = Option.String('-I,--dir-ignore', '', {
@@ -146,28 +145,26 @@ export class CompressCommand extends Command {
     description: 'exec commands, default false(only preview commands, aka dry run)',
   })
 
-  async execute(): Promise<number | void> {
+  execute(): Promise<number | void> {
     return this.run()
   }
 
   get valitedArgs() {
-    let { codec, quality, concurrency, lossless } = this
+    const { codec, quality, concurrency, lossless } = this
 
     if (!AllOWED_CODEC.includes(codec as Codec)) {
       throw new Error('unsupported codec, supported: ' + AllOWED_CODEC.join(' or '))
     }
 
-    let _codec = codec as Codec
-    if (_codec === 'mozjpeg' || _codec === 'mozjpeg-raw') {
-      if (this.lossless) {
-        throw new Error('-L,--lossless can not be used with jpeg')
-      }
+    const _codec = codec as Codec
+    if ((_codec === 'mozjpeg' || _codec === 'mozjpeg-raw') && this.lossless) {
+      throw new Error('-L,--lossless can not be used with jpeg')
     }
 
-    let qualityAsNum = Number(quality)
-    let concurrencyAsNum = Number(concurrency)
-    if (isNaN(qualityAsNum)) throw new Error('expect quality as a number')
-    if (isNaN(concurrencyAsNum)) throw new Error('expect concurrency as a number')
+    const qualityAsNum = Number(quality)
+    const concurrencyAsNum = Number(concurrency)
+    if (Number.isNaN(qualityAsNum)) throw new Error('expect quality as a number')
+    if (Number.isNaN(concurrencyAsNum)) throw new Error('expect concurrency as a number')
 
     return {
       codec: codec as Codec,
@@ -184,17 +181,7 @@ export class CompressCommand extends Command {
   }
 
   async run() {
-    const {
-      files,
-      showTokens,
-      ignoreCase,
-      globCwd = process.cwd(),
-      yes,
-      dir,
-      metadata,
-      lossless,
-      dirIgnore,
-    } = this
+    const { files, showTokens, ignoreCase, globCwd = process.cwd(), yes, dir, metadata, lossless, dirIgnore } = this
     const { codec, quality, concurrency } = this.valitedArgs
     const { outputDirSuffix } = this.mappedArgs
 
@@ -227,12 +214,7 @@ export class CompressCommand extends Command {
           const basename = path.basename(item)
           const ext = path.extname(item).slice(1).toLowerCase()
           let stat: fse.Stats | undefined
-          return (
-            !basename.startsWith('.') &&
-            DIR_IMG_EXTS.includes(ext) &&
-            (stat = fse.statSync(item)) &&
-            stat.isFile()
-          )
+          return !basename.startsWith('.') && DIR_IMG_EXTS.includes(ext) && (stat = fse.statSync(item)) && stat.isFile()
         })
         if (!resolvedFiles.length) {
           console.error('$PF has no valid imgs')
@@ -244,15 +226,9 @@ export class CompressCommand extends Command {
 
       resolvedFiles = finderSort(resolvedFiles, { folderFirst: true })
       console.log('')
+      console.log(`${chalk.green('[glob]')}: docs ${chalk.blue('https://github.com/mrmlnc/fast-glob#pattern-syntax')}`)
       console.log(
-        `${chalk.green('[glob]')}: docs ${chalk.blue(
-          'https://github.com/mrmlnc/fast-glob#pattern-syntax',
-        )}`,
-      )
-      console.log(
-        `${chalk.green('[glob]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(
-          resolvedFiles.length,
-        )} files ->`,
+        `${chalk.green('[glob]')}: mapping ${chalk.yellow(files)} to ${chalk.yellow(resolvedFiles.length)} files ->`,
       )
       resolvedFiles.forEach((f) => {
         console.log(`  ${chalk.cyan(f)}`)
@@ -267,8 +243,8 @@ export class CompressCommand extends Command {
         output = `:dir-${codec}-${q}/:name.:ext`
       }
 
-      let outputs: string[] = []
-      for (let item of resolvedFiles) {
+      const outputs: string[] = []
+      for (const item of resolvedFiles) {
         const tokens = getFilenameTokens(item)
         tokens.ext = targetExt
 
@@ -285,12 +261,7 @@ export class CompressCommand extends Command {
           curOutput = renderFilenameTokens(output, tokens)
           outputs.push(curOutput)
           if (!yes) {
-            console.log(
-              '%s: %s -> %s',
-              chalk.green('[compress:preview]'),
-              chalk.green(item),
-              chalk.yellow(curOutput),
-            )
+            console.log('%s: %s -> %s', chalk.green('[compress:preview]'), chalk.green(item), chalk.yellow(curOutput))
           }
         }
       }
@@ -309,7 +280,7 @@ export class CompressCommand extends Command {
       if (this.yes && this.output) {
         await pmap(
           resolvedFiles,
-          async (item, index) => {
+          (item, index) => {
             const curOutput = outputs[index]
 
             const progress = `${(index + 1)
@@ -374,7 +345,7 @@ export class CompressCommand extends Command {
       const outputs: string[] = []
       const outputsRelative: string[] = []
 
-      for (let item of resolvedFiles) {
+      for (const item of resolvedFiles) {
         // item -> 切换 ext
         const outputRelativeFilename = path.join(
           path.dirname(item),
@@ -397,7 +368,7 @@ export class CompressCommand extends Command {
       if (this.yes) {
         await pmap(
           resolvedFiles,
-          async (item, index) => {
+          (item, index) => {
             const inputDisplay = inputDirTitle + '/' + item
             const inputFullpath = path.join(inputDir, item)
             const outputDisplay = outputDirTitle + '/' + outputsRelative[index]
@@ -697,7 +668,7 @@ async function outputValid(inputFullpath: string, outputFullpath: string): Promi
 
     // try decode
     await decode(outputFullpath)
-  } catch (e) {
+  } catch {
     return false
   }
 

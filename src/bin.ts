@@ -1,11 +1,11 @@
 #!/usr/bin/env node
 
+import { createRequire } from 'node:module'
 import { Builtins, Cli } from 'clipanion'
-import { createRequire } from 'module'
-import { type PackageJson } from 'type-fest'
 import { CompressCommand } from './commands/compress'
 import { InfoCommand } from './commands/info'
 import { RotateCommand } from './commands/rotate'
+import type { PackageJson } from 'type-fest'
 
 const require = createRequire(import.meta.url)
 const { version, name, bin } = require('../package.json') as PackageJson

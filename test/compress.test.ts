@@ -1,5 +1,5 @@
-import { readFile } from 'fs/promises'
-import path from 'path'
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 import { describe, expect, it } from 'vitest'
 import { metadata } from '../src/codec/decode.js'
 import { mozjpegCompress, sharpMozjpegCompress } from '../src/compress.js'

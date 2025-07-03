@@ -1,12 +1,12 @@
-import { Command, Option, Usage } from 'clipanion'
+import path from 'node:path'
+import { Command, Option, type Usage } from 'clipanion'
 import exifr from 'exifr'
-import path from 'path'
 import { decode, metadata } from '../index.js'
 
 export class InfoCommand extends Command {
-  static paths = [['info'], ['i']]
+  static override paths = [['info'], ['i']]
 
-  static usage: Usage = {
+  static override usage: Usage = {
     description: 'show info for file',
   }
 
@@ -40,6 +40,6 @@ export async function main({ file, verbose }: { file: string; verbose: boolean }
       mergeOutput: true,
       translateValues: false,
     })
-    console.log('\n\nexifr all: ', all)
+    console.log('\n\nexifr all:', all)
   }
 }

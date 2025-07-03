@@ -1,18 +1,18 @@
-import { Command, type Usage, Option } from 'clipanion'
-import { PathFinder } from 'mac-helper'
+import path from 'node:path'
+import { Command, Option, type Usage } from 'clipanion'
 import fg from 'fast-glob'
-import path from 'path'
-import { isFile } from 'path-type'
-import micromatch from 'micromatch'
-import sharp from 'sharp'
-import { z } from 'zod'
 import fse from 'fs-extra'
 import logSymbols from 'log-symbols'
+import { PathFinder } from 'mac-helper'
+import micromatch from 'micromatch'
+import { isFile } from 'path-type'
+import sharp from 'sharp'
+import { z } from 'zod'
 
 export class RotateCommand extends Command {
-  static paths = [['rotate'], ['r']]
+  static override paths = [['rotate'], ['r']]
 
-  static usage: Usage = {
+  static override usage: Usage = {
     description: 'rotate img',
   }
 

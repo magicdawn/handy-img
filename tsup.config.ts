@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import { defineConfig, type Options } from 'tsup'
 
 const shared: Options = {

@@ -1,9 +1,9 @@
+import { readFile } from 'node:fs/promises'
+import path from 'node:path'
 import { decode as bmpDecode } from '@vingle/bmp-js'
-import { readFile } from 'fs/promises'
 import NodeMozjpeg, { type EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
-import path from 'path'
-import sharp, { Sharp } from 'sharp'
-import { decode, SharpInput } from './codec/decode.js'
+import sharp, { type Sharp } from 'sharp'
+import { decode, type SharpInput } from './codec/decode.js'
 
 const { encode: mozjpegEncode } = NodeMozjpeg
 
@@ -45,28 +45,20 @@ const handleBmp = (buf: Buffer) => {
 
 async function getSharpInstance(input: SharpInput): Promise<Sharp> {
   // bmp
-  if (typeof input === 'string') {
-    if (path.extname(input).toLowerCase() === '.bmp') {
-      const buf = await readFile(input)
-      if (isBitmap(buf)) {
-        return handleBmp(buf)
-      }
+  if (typeof input === 'string' && path.extname(input).toLowerCase() === '.bmp') {
+    const buf = await readFile(input)
+    if (isBitmap(buf)) {
+      return handleBmp(buf)
     }
   }
-  if (Buffer.isBuffer(input)) {
-    if (isBitmap(input)) {
-      return handleBmp(input)
-    }
+  if (Buffer.isBuffer(input) && isBitmap(input)) {
+    return handleBmp(input)
   }
 
   return sharp(input)
 }
 
-export async function sharpMozjpegCompress(
-  file: SharpInput,
-  keepMetadata = true,
-  options?: sharp.JpegOptions,
-) {
+export async function sharpMozjpegCompress(file: SharpInput, keepMetadata = true, options?: sharp.JpegOptions) {
   let img = (await getSharpInstance(file)).jpeg({
     mozjpeg: true,
     ...options,
@@ -80,20 +72,10 @@ export async function sharpMozjpegCompress(
   return buf
 }
 
-function sharpTargetFormatFactory<T extends 'webp' | 'avif' | 'jxl'>(
-  targetFormat: 'webp' | 'avif' | 'jxl',
-) {
-  type IOptions = T extends 'webp'
-    ? sharp.WebpOptions
-    : T extends 'avif'
-      ? sharp.AvifOptions
-      : sharp.JxlOptions
+function sharpTargetFormatFactory<T extends 'webp' | 'avif' | 'jxl'>(targetFormat: 'webp' | 'avif' | 'jxl') {
+  type IOptions = T extends 'webp' ? sharp.WebpOptions : T extends 'avif' ? sharp.AvifOptions : sharp.JxlOptions
 
-  return async function sharpCompressToFormat(
-    file: SharpInput,
-    keepMetadata = true,
-    options?: IOptions,
-  ) {
+  return async function sharpCompressToFormat(file: SharpInput, keepMetadata = true, options?: IOptions) {
     let img = (await getSharpInstance(file))[targetFormat](options)
 
     if (keepMetadata) {
