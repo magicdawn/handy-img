@@ -1,11 +1,9 @@
 import path from 'node:path'
 import { Command, Option, type Usage } from 'clipanion'
-import fg from 'fast-glob'
 import fse from 'fs-extra'
 import logSymbols from 'log-symbols'
-import { PathFinder } from 'mac-helper'
-import micromatch from 'micromatch'
-import { isFile } from 'path-type'
+import { normalizeInputFileList } from 'mac-helper'
+import { matchFromList } from 'needle-kit'
 import sharp from 'sharp'
 import { z } from 'zod'
 
@@ -30,45 +28,30 @@ export class RotateCommand extends Command {
   })
 
   async execute(): Promise<number | void> {
+    const inputFiles = await normalizeInputFileList(this.files)
+    const imgFiles = await matchFromList(inputFiles, '*.{jpg,jpeg,png,webp,bmp,webp}', {
+      caseSensitiveMatch: false,
+    })
+
     const degree = z.coerce.number().gt(0).lte(360).parse(this.degree)
 
-    const input: string[] = []
-    for (const f of this.files) {
-      if (f === '$PF') {
-        input.push(...(await PathFinder.allSelected()))
-      } else {
-        input.push(path.resolve(f))
-      }
-    }
-
-    const pattern = './**/*.{jpg,jpeg,png,webp,bmp,webp}'
-    const isImg = (p: string) => micromatch([p], pattern, { nocase: true }).length > 0
-
-    const inputFiles: string[] = []
-    for (const item of input) {
-      if (await isFile(item)) {
-        if (isImg(item)) {
-          inputFiles.push(item)
-        }
-      } else {
-        inputFiles.push(
-          ...(await fg(pattern, {
-            cwd: item,
-            absolute: true,
-            onlyFiles: true,
-            caseSensitiveMatch: false,
-          })),
-        )
-      }
-    }
-
-    for (const f of inputFiles) {
+    for (const f of imgFiles) {
       const dir = path.dirname(f)
       const basename = path.basename(f)
       const extname = path.extname(f)
       const output = this.overwrite ? f : path.join(dir, `${basename}-rotated${extname}`)
+
+      // backup
+      const stat = await fse.stat(f)
+
+      // rotate
       const buf = await sharp(f).rotate(degree).keepMetadata().toBuffer()
       await fse.writeFile(output, buf)
+
+      // restore meta
+      await fse.chmod(output, stat.mode)
+      await fse.utimes(output, stat.atime, stat.mtime)
+
       console.log(`${logSymbols.success} rotated file written to %s`, output)
     }
   }
