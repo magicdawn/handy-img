@@ -2,11 +2,8 @@
   "include": ["src/**/*"],
   "compilerOptions": {
     "rootDir": "src",
-    "module": "ESNext",
-    "moduleResolution": "Bundler",
-    "esModuleInterop": true,
-    "allowSyntheticDefaultImports": true,
-    "strict": true,
+    "module": "preserve",
+    "moduleResolution": "bundler",
     "noImplicitOverride": true,
     "skipLibCheck": true,
     "noEmit": true

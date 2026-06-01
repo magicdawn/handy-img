@@ -12,21 +12,21 @@ import fse from 'fs-extra'
 import humanizeDuration from 'humanize-duration'
 import LogSymbols from 'log-symbols'
 import { PathFinder } from 'mac-helper'
-import { osLocaleSync } from 'os-locale'
+import osLocale from 'os-locale'
 import pmap from 'promise.map'
-import { decode, metadata } from '../codec/decode.js'
+import { decode, metadata } from '../codec/decode'
 import {
   mozjpegCompress,
   sharpAvifCompress,
   sharpJxlCompress,
   sharpMozjpegCompress,
   sharpWebpCompress,
-} from '../compress.js'
+} from '../compress'
 
 // locale: en-US / zh-CN / zh-TW
 // lang: en / zh_CN / zh_TW
 const { humanizer } = humanizeDuration
-const locale = osLocaleSync()
+const locale = osLocale()
 const lang = locale.startsWith('zh') ? locale.replace(/-/, '_') : locale.split('-')[0]
 const getDurationDisplay = humanizer({ language: lang, fallbacks: ['en'], round: true })
 

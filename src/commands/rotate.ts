@@ -18,14 +18,10 @@ export class RotateCommand extends Command {
     description: 'overwrite input files',
   })
 
-  degree = Option.String('-d,--degree', {
-    description: 'rotate degree',
-    required: true,
-  })
+  // `-d ' -90'` use quote + leading space to escape from Clipanion parsing
+  degree = Option.String('-d,--degree', { description: 'rotate degree', required: true })
 
-  files = Option.Rest({
-    name: 'files',
-  })
+  files = Option.Rest({ name: 'files' })
 
   async execute(): Promise<number | void> {
     const inputFiles = await normalizeInputFileList(this.files)
@@ -33,7 +29,7 @@ export class RotateCommand extends Command {
       caseSensitiveMatch: false,
     })
 
-    const degree = z.coerce.number().gt(0).lte(360).parse(this.degree)
+    const degree = z.coerce.number().gte(-180).lte(360).parse(this.degree)
 
     for (const f of imgFiles) {
       const dir = path.dirname(f)

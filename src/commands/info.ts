@@ -1,7 +1,7 @@
 import path from 'node:path'
 import { Command, Option, type Usage } from 'clipanion'
 import exifr from 'exifr'
-import { decode, metadata } from '../index.js'
+import { decode, metadata } from '../index'
 
 export class InfoCommand extends Command {
   static override paths = [['info'], ['i']]

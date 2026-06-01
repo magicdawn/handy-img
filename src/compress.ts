@@ -3,7 +3,7 @@ import path from 'node:path'
 import { decode as bmpDecode } from '@vingle/bmp-js'
 import NodeMozjpeg, { type EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
 import sharp, { type Sharp } from 'sharp'
-import { decode, type SharpInput } from './codec/decode.js'
+import { decode, type SharpInput } from './codec/decode'
 
 const { encode: mozjpegEncode } = NodeMozjpeg
 
