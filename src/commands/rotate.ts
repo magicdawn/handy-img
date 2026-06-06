@@ -19,7 +19,9 @@ export class RotateCommand extends Command {
     description: 'overwrite input files',
   })
 
-  // `-d ' -90'` use quote + leading space to escape from Clipanion parsing
+  // to escape from Clipanion parsing, use any of these
+  // 	-d ' -90'   quote + leading space
+  //  -d @-90     @ escape
   degree = Option.String('-d,--degree', { description: 'rotate degree', required: true })
 
   files = Option.Rest({ name: 'files' })
