@@ -1,5 +1,6 @@
 import path from 'node:path'
 import { Command, Option, type Usage } from 'clipanion'
+import { trim } from 'es-toolkit'
 import fse from 'fs-extra'
 import logSymbols from 'log-symbols'
 import { normalizeInputFileList } from 'mac-helper'
@@ -23,13 +24,18 @@ export class RotateCommand extends Command {
 
   files = Option.Rest({ name: 'files' })
 
+  static parseDegree(input: string): number {
+    input = trim(input, ['@', ' ']) // 负值用 @ escape
+    return z.coerce.number().gte(-180).lte(360).parse(input)
+  }
+
   async execute(): Promise<number | void> {
     const inputFiles = await normalizeInputFileList(this.files)
     const imgFiles = await matchFromList(inputFiles, '*.{jpg,jpeg,png,webp,bmp,webp}', {
       caseSensitiveMatch: false,
     })
 
-    const degree = z.coerce.number().gte(-180).lte(360).parse(this.degree)
+    const degree = RotateCommand.parseDegree(this.degree)
 
     for (const f of imgFiles) {
       const dir = path.dirname(f)
