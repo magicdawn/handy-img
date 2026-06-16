@@ -22,7 +22,7 @@ export class RotateCommand extends Command {
   // to escape from Clipanion parsing, use any of these
   // 	-d ' -90'   quote + leading space
   //  -d @-90     @ escape
-  degree = Option.String('-d,--degree', { description: 'rotate degree', required: true })
+  degree = Option.String('-d,--deg,--degree', { description: 'rotate degree', required: true })
 
   files = Option.Rest({ name: 'files' })
 
