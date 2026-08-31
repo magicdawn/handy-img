@@ -1,9 +1,4 @@
-import sharp from 'sharp'
-
-/**
- * sharp(input: SharpInput)
- */
-export type SharpInput = NonNullable<Parameters<typeof sharp>[0]>
+import sharp, { type SharpInput } from 'sharp'
 
 /**
  * get image metadata

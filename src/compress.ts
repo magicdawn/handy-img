@@ -2,8 +2,15 @@ import { readFile } from 'node:fs/promises'
 import path from 'node:path'
 import { decode as bmpDecode } from '@vingle/bmp-js'
 import NodeMozjpeg, { type EncodeOptions as MozjpegEncodeOptions } from 'node-mozjpeg'
-import sharp, { type Sharp } from 'sharp'
-import { decode, type SharpInput } from './codec/decode'
+import sharp, {
+  type AvifOptions,
+  type JpegOptions,
+  type JxlOptions,
+  type Sharp,
+  type SharpInput,
+  type WebpOptions,
+} from 'sharp'
+import { decode } from './codec/decode'
 
 const { encode: mozjpegEncode } = NodeMozjpeg
 
@@ -58,7 +65,7 @@ async function getSharpInstance(input: SharpInput): Promise<Sharp> {
   return sharp(input)
 }
 
-export async function sharpMozjpegCompress(file: SharpInput, keepMetadata = true, options?: sharp.JpegOptions) {
+export async function sharpMozjpegCompress(file: SharpInput, keepMetadata = true, options?: JpegOptions) {
   let img = (await getSharpInstance(file)).jpeg({
     mozjpeg: true,
     ...options,
@@ -73,7 +80,7 @@ export async function sharpMozjpegCompress(file: SharpInput, keepMetadata = true
 }
 
 function sharpTargetFormatFactory<T extends 'webp' | 'avif' | 'jxl'>(targetFormat: 'webp' | 'avif' | 'jxl') {
-  type IOptions = T extends 'webp' ? sharp.WebpOptions : T extends 'avif' ? sharp.AvifOptions : sharp.JxlOptions
+  type IOptions = T extends 'webp' ? WebpOptions : T extends 'avif' ? AvifOptions : JxlOptions
 
   return async function sharpCompressToFormat(file: SharpInput, keepMetadata = true, options?: IOptions) {
     let img = (await getSharpInstance(file))[targetFormat](options)

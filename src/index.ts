@@ -1,8 +1,6 @@
-import mozjpeg from 'node-mozjpeg'
-import sharp from 'sharp'
-
 // decode to metadata or Buffer
-export { decode, metadata, type SharpInput } from './codec/decode'
+export { decode, metadata } from './codec/decode'
+
 // high level compress API
 export {
   mozjpegCompress,
@@ -11,6 +9,9 @@ export {
   sharpMozjpegCompress,
   sharpWebpCompress,
 } from './compress'
-
 export * from './util'
-export { mozjpeg, sharp }
+
+// re-export
+export { default as mozjpeg } from 'node-mozjpeg'
+export { default as sharp } from 'sharp'
+export type { SharpInput } from 'sharp'
