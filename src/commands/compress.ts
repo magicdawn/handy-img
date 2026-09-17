@@ -11,7 +11,7 @@ import figures from 'figures'
 import fse from 'fs-extra'
 import humanizeDuration from 'humanize-duration'
 import LogSymbols from 'log-symbols'
-import { PathFinder } from 'mac-helper'
+import { isRepresentPF, PathFinder } from 'mac-helper'
 import osLocale from 'os-locale'
 import pmap from 'promise.map'
 import { decode, metadata } from '../codec/decode'
@@ -27,7 +27,7 @@ import {
 // lang: en / zh_CN / zh_TW
 const { humanizer } = humanizeDuration
 const locale = osLocale()
-const lang = locale.startsWith('zh') ? locale.replace(/-/, '_') : locale.split('-')[0]
+const lang = locale.startsWith('zh') ? locale.replace(/-/, '_') : locale.split('-', 1)[0]
 const getDurationDisplay = humanizer({ language: lang, fallbacks: ['en'], round: true })
 
 // 2023-03-24:
@@ -208,7 +208,7 @@ export class CompressCommand extends Command {
     const processFiles = async (files: string) => {
       let resolvedFiles: string[] = []
 
-      if (files === '$PF') {
+      if (isRepresentPF(files)) {
         resolvedFiles = await PathFinder.allSelected()
         resolvedFiles = resolvedFiles.filter((item) => {
           const basename = path.basename(item)
@@ -217,7 +217,7 @@ export class CompressCommand extends Command {
           return !basename.startsWith('.') && DIR_IMG_EXTS.includes(ext) && (stat = fse.statSync(item)) && stat.isFile()
         })
         if (!resolvedFiles.length) {
-          console.error('$PF has no valid imgs')
+          console.error('PathFinder selected has no valid imgs')
           process.exit(1)
         }
       } else {
@@ -491,14 +491,14 @@ export class CompressCommand extends Command {
 
     // dir
     else if (inputMode === 'dir') {
-      if (dir === '$PF') {
+      if (dir && isRepresentPF(dir)) {
         const pfSelectedDirs = await PathFinder.allSelected()
         if (!pfSelectedDirs.length) {
-          console.error('$PF has no select')
+          console.error('PathFinder has no select')
           process.exit(1)
         }
 
-        console.log('$PF maps to :')
+        console.log('PathFinder selected maps to :')
         pfSelectedDirs.forEach((dir) => {
           console.log(` ${chalk.cyan(dir)}`)
         })
