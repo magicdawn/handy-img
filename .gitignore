@@ -17,3 +17,6 @@ test/fixtures/*.png
 /tsconfig.tsbuildinfo
 **/*_compressed.jpeg
 /dist
+
+/demos
+/demo

@@ -1,5 +1,5 @@
 {
-  "include": ["src/**/*"],
+  "include": ["./src", "src/optique-commands"],
   "compilerOptions": {
     "rootDir": "src",
     "module": "preserve",
